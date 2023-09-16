@@ -127,9 +127,11 @@ resource "kubernetes_deployment" "postgresql" {
   depends_on = [
     kubernetes_config_map.postgresql_env,
     kubernetes_secret.postgresql_secret,
-    kubernetes_persistent_volume_claim.postgresql_pvc
+    kubernetes_persistent_volume_claim.postgresql_pvc,
+    kubernetes_service.postgresql_service
   ]
   timeouts {
     create = "2m"
+    update = "2m"
   }
 }

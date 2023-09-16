@@ -97,12 +97,14 @@ resource "kubernetes_deployment" "redis_deployment" {
     }
   }
   depends_on = [
-    kubernetes_service.redis_service,
+    kubernetes_secret.redis_secret,
     kubernetes_persistent_volume_claim.redis_pvc,
+    kubernetes_service.redis_service,
     kubernetes_service.redis_service
   ]
   timeouts {
     create = "2m"
+    update = "2m"
   }
 }
 
