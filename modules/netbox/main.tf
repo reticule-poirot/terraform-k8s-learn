@@ -89,7 +89,7 @@ resource "kubernetes_deployment" "netbox" {
               port = "8080"
               path = "/api/"
             }
-            initial_delay_seconds = 120
+            initial_delay_seconds = 240
           }
           env_from {
             config_map_ref {
