@@ -11,6 +11,7 @@ variable "name" {
 variable "redis_password" {
   type        = string
   description = "Redis db password"
+  sensitive   = true
 }
 
 variable "redis_data_size" {

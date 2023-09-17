@@ -16,6 +16,7 @@ variable "psql_user" {
 variable "psql_password" {
   type        = string
   description = "Postgresql user password"
+  sensitive   = true
 }
 
 variable "psql_db" {
