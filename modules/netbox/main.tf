@@ -9,8 +9,9 @@ resource "kubernetes_config_map" "netbox_env" {
   }
   data = {
     DB_NAME          = var.netbox_db
+    DB_PORT          = var.netbox_db_port
     DB_USER          = var.netbox_db_user
-    DB_HOST          = var.db_service
+    DB_HOST          = var.netbox_db_service
     REDIS_HOST       = var.redis_service
     REDIS_PORT       = var.redis_port
     REDIS_CACHE_HOST = var.redis_cache_service
