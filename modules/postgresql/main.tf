@@ -1,10 +1,16 @@
 locals {
   psql_secrets = ["postgres-password", "postgres-user", "postgres-db"]
+  labels = {
+    name       = var.name
+    version    = var.psql_version
+    managed-by = "terraform"
+  }
 }
 
 resource "kubernetes_config_map" "postgresql_env" {
   metadata {
-    name = "${var.name}-env"
+    name   = "${var.name}-env"
+    labels = local.labels
   }
   data = {
     POSTGRES_PASSWORD_FILE = "/run/secrets/postgres_password"
@@ -15,7 +21,8 @@ resource "kubernetes_config_map" "postgresql_env" {
 
 resource "kubernetes_secret" "postgresql_secret" {
   metadata {
-    name = "${var.name}-secret"
+    name   = "${var.name}-secret"
+    labels = local.labels
   }
   data = {
     postgres_user : var.psql_user
@@ -26,7 +33,8 @@ resource "kubernetes_secret" "postgresql_secret" {
 
 resource "kubernetes_persistent_volume_claim" "postgresql_pvc" {
   metadata {
-    name = "${var.name}-pvc"
+    name   = "${var.name}-pvc"
+    labels = local.labels
   }
   spec {
     access_modes = ["ReadWriteOnce"]
