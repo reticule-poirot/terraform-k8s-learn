@@ -47,7 +47,7 @@ resource "kubernetes_service" "postgresql_service" {
       name = var.name
     }
     port {
-      port = 5432
+      port = var.psql_port
     }
   }
 }
@@ -75,7 +75,7 @@ resource "kubernetes_deployment" "postgresql" {
           image_pull_policy = "IfNotPresent"
           name              = var.name
           port {
-            container_port = 5432
+            container_port = var.psql_port
           }
           readiness_probe {
             exec {

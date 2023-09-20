@@ -24,6 +24,12 @@ variable "psql_db" {
   description = "Postgresql database name"
 }
 
+variable "psql_port" {
+  type        = number
+  description = "Postgresql port"
+  default     = 5432
+}
+
 variable "psql_data_size" {
   type        = string
   description = "Postgresql data volume size"
