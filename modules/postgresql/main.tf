@@ -31,6 +31,25 @@ resource "kubernetes_secret" "postgresql_secret" {
   }
 }
 
+resource "kubernetes_persistent_volume" "postgresql_pv" {
+  metadata {
+    name   = "${var.name}-pv"
+    labels = local.labels
+  }
+  spec {
+    access_modes = ["ReadWriteOnce"]
+    capacity = {
+      storage = var.psql_data_size
+    }
+    storage_class_name = "local"
+    persistent_volume_source {
+      host_path {
+        path = "/mnt/${var.name}_psql_data"
+      }
+    }
+  }
+}
+
 resource "kubernetes_persistent_volume_claim" "postgresql_pvc" {
   metadata {
     name   = "${var.name}-pvc"
@@ -42,6 +61,10 @@ resource "kubernetes_persistent_volume_claim" "postgresql_pvc" {
       requests = {
         storage = var.psql_data_size
       }
+    }
+    storage_class_name = "local"
+    selector {
+      match_labels = local.labels
     }
   }
 }
