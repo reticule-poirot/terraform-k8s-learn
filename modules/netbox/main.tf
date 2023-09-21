@@ -21,6 +21,17 @@ resource "kubernetes_config_map" "netbox_env" {
   }
 }
 
+resource "kubernetes_secret" "netbox_tls" {
+  metadata {
+    name = "${var.name}-tls"
+  }
+  type = "tls"
+  data = {
+    "tls.crt" : var.tls_cert
+    "tls.key" : var.tls_key
+  }
+}
+
 resource "kubernetes_secret" "netbox_secret" {
   metadata {
     name = "${var.name}-secret"
@@ -67,6 +78,9 @@ resource "kubernetes_ingress_v1" "netbox" {
     name = "netbox-ingres"
   }
   spec {
+    tls {
+      secret_name = kubernetes_secret.netbox_tls.metadata[0].name
+    }
     ingress_class_name = "nginx"
     rule {
       host = var.fqdn
@@ -85,6 +99,10 @@ resource "kubernetes_ingress_v1" "netbox" {
       }
     }
   }
+  depends_on = [
+    kubernetes_secret.netbox_tls,
+    kubernetes_service.netbox_service
+  ]
 }
 
 resource "kubernetes_deployment" "netbox" {

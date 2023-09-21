@@ -36,6 +36,8 @@ No resources.
 | <a name="input_gitea_db_password"></a> [gitea\_db\_password](#input\_gitea\_db\_password) | Gitea database password | `string` | n/a | yes |
 | <a name="input_host"></a> [host](#input\_host) | Kubernetes cluster | `string` | n/a | yes |
 | <a name="input_netbox_password"></a> [netbox\_password](#input\_netbox\_password) | Netbox database password | `string` | n/a | yes |
+| <a name="input_netbox_tls_cert"></a> [netbox\_tls\_cert](#input\_netbox\_tls\_cert) | Netbox tls certificate | `string` | n/a | yes |
+| <a name="input_netbox_tls_key"></a> [netbox\_tls\_key](#input\_netbox\_tls\_key) | Netbox tls certificate key | `string` | n/a | yes |
 | <a name="input_redis_cache_password"></a> [redis\_cache\_password](#input\_redis\_cache\_password) | Redis db password | `string` | n/a | yes |
 | <a name="input_redis_password"></a> [redis\_password](#input\_redis\_password) | Redis db password | `string` | n/a | yes |
 | <a name="input_secret_key"></a> [secret\_key](#input\_secret\_key) | Netbox secret key | `string` | n/a | yes |

@@ -43,6 +43,8 @@ module "netbox_netbox" {
   redis_service        = module.netbox_redis["redis"].service
   redis_cache_service  = module.netbox_redis["redis-cache"].service
   secret_key           = var.secret_key
+  tls_cert             = base64decode(var.netbox_tls_cert)
+  tls_key              = base64decode(var.netbox_tls_key)
 }
 
 module "netbox_gitea" {

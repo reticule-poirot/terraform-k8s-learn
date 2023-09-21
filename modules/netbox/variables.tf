@@ -10,6 +10,18 @@ variable "fqdn" {
   default     = "netbox.example.local"
 }
 
+variable "tls_cert" {
+  type        = string
+  description = "Netbox tls certificate"
+  sensitive   = true
+}
+
+variable "tls_key" {
+  type        = string
+  description = "Netbox tls certificate key"
+  sensitive   = true
+}
+
 variable "netbox_version" {
   type        = string
   description = "Netbox version"

@@ -20,14 +20,17 @@ No modules.
 | [kubernetes_config_map.netbox_env](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/config_map) | resource |
 | [kubernetes_cron_job_v1.netbox_cron](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/cron_job_v1) | resource |
 | [kubernetes_deployment.netbox](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/deployment) | resource |
+| [kubernetes_ingress_v1.netbox](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/ingress_v1) | resource |
 | [kubernetes_persistent_volume_claim.netbox_pvc](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/persistent_volume_claim) | resource |
 | [kubernetes_secret.netbox_secret](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/secret) | resource |
+| [kubernetes_secret.netbox_tls](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/secret) | resource |
 | [kubernetes_service.netbox_service](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/service) | resource |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_fqdn"></a> [fqdn](#input\_fqdn) | Netbox fqdn | `string` | `"netbox.example.local"` | no |
 | <a name="input_name"></a> [name](#input\_name) | Netbox pod name | `string` | `"netbox"` | no |
 | <a name="input_netbox_data_size"></a> [netbox\_data\_size](#input\_netbox\_data\_size) | Netbox data volume size | `string` | `"0.5Gi"` | no |
 | <a name="input_netbox_db"></a> [netbox\_db](#input\_netbox\_db) | Netbox database name | `string` | `"netbox"` | no |
@@ -42,6 +45,8 @@ No modules.
 | <a name="input_redis_port"></a> [redis\_port](#input\_redis\_port) | Redis db port | `number` | `6379` | no |
 | <a name="input_redis_service"></a> [redis\_service](#input\_redis\_service) | Redis service | `string` | n/a | yes |
 | <a name="input_secret_key"></a> [secret\_key](#input\_secret\_key) | Netbox secret key | `string` | n/a | yes |
+| <a name="input_tls_cert"></a> [tls\_cert](#input\_tls\_cert) | Netbox tls certificate | `string` | n/a | yes |
+| <a name="input_tls_key"></a> [tls\_key](#input\_tls\_key) | Netbox tls certificate key | `string` | n/a | yes |
 
 ## Outputs
 

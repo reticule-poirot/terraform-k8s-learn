@@ -45,3 +45,12 @@ variable "secret_key" {
   description = "Netbox secret key"
   sensitive   = true
 }
+
+variable "netbox_tls_cert" {
+  type        = string
+  description = "Netbox tls certificate"
+}
+variable "netbox_tls_key" {
+  type        = string
+  description = "Netbox tls certificate key"
+}
