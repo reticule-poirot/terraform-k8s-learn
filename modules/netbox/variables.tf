@@ -4,6 +4,12 @@ variable "name" {
   default     = "netbox"
 }
 
+variable "fqdn" {
+  type        = string
+  description = "Netbox fqdn"
+  default     = "netbox.example.local"
+}
+
 variable "netbox_version" {
   type        = string
   description = "Netbox version"

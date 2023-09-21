@@ -8,6 +8,7 @@ resource "kubernetes_config_map" "netbox_env" {
     name = "${var.name}-env"
   }
   data = {
+    ALLOWED_HOSTS    = var.fqdn
     DB_NAME          = var.netbox_db
     DB_PORT          = var.netbox_db_port
     DB_USER          = var.netbox_db_user
@@ -57,6 +58,31 @@ resource "kubernetes_service" "netbox_service" {
     }
     port {
       port = 8080
+    }
+  }
+}
+
+resource "kubernetes_ingress_v1" "netbox" {
+  metadata {
+    name = "netbox-ingres"
+  }
+  spec {
+    ingress_class_name = "nginx"
+    rule {
+      host = var.fqdn
+      http {
+        path {
+          path = "/"
+          backend {
+            service {
+              name = kubernetes_service.netbox_service.metadata[0].name
+              port {
+                number = 8080
+              }
+            }
+          }
+        }
+      }
     }
   }
 }
