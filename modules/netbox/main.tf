@@ -28,7 +28,7 @@ resource "kubernetes_config_map" "netbox_env" {
 }
 
 resource "kubernetes_secret" "netbox_tls" {
-  count = var.use_ingress && var.tls_cert != "" && var.tls_key != "" ? 1 : 0
+  count = var.use_ingress && var.tls_cert != null && var.tls_key != null ? 1 : 0
   metadata {
     name   = "${var.name}-tls"
     labels = local.labels
@@ -85,7 +85,7 @@ resource "kubernetes_service" "netbox_service" {
 }
 
 resource "kubernetes_ingress_v1" "netbox" {
-  count = var.use_ingress && var.tls_cert != "" && var.tls_key != "" ? 1 : 0
+  count = var.use_ingress && var.tls_cert != null && var.tls_key != null ? 1 : 0
   metadata {
     name   = "${var.name}-ingres"
     labels = local.labels
