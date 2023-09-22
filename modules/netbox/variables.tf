@@ -13,12 +13,14 @@ variable "fqdn" {
 variable "tls_cert" {
   type        = string
   description = "Netbox tls certificate"
+  default     = ""
   sensitive   = true
 }
 
 variable "tls_key" {
   type        = string
   description = "Netbox tls certificate key"
+  default     = ""
   sensitive   = true
 }
 
@@ -99,4 +101,10 @@ variable "secret_key" {
     condition     = length(var.secret_key) >= 50
     error_message = "Length < 50"
   }
+}
+
+variable "use_ingress" {
+  type        = bool
+  description = "Use ingress"
+  default     = true
 }

@@ -22,6 +22,7 @@ resource "kubernetes_config_map" "netbox_env" {
 }
 
 resource "kubernetes_secret" "netbox_tls" {
+  count = var.use_ingress && var.tls_cert != "" && var.tls_key != "" ? 1 : 0
   metadata {
     name = "${var.name}-tls"
   }
@@ -74,12 +75,13 @@ resource "kubernetes_service" "netbox_service" {
 }
 
 resource "kubernetes_ingress_v1" "netbox" {
+  count = var.use_ingress && var.tls_cert != "" && var.tls_key != "" ? 1 : 0
   metadata {
     name = "netbox-ingres"
   }
   spec {
     tls {
-      secret_name = kubernetes_secret.netbox_tls.metadata[0].name
+      secret_name = kubernetes_secret.netbox_tls[count.index].metadata[0].name
     }
     ingress_class_name = "nginx"
     rule {

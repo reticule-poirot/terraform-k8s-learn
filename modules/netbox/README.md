@@ -45,8 +45,9 @@ No modules.
 | <a name="input_redis_port"></a> [redis\_port](#input\_redis\_port) | Redis db port | `number` | `6379` | no |
 | <a name="input_redis_service"></a> [redis\_service](#input\_redis\_service) | Redis service | `string` | n/a | yes |
 | <a name="input_secret_key"></a> [secret\_key](#input\_secret\_key) | Netbox secret key | `string` | n/a | yes |
-| <a name="input_tls_cert"></a> [tls\_cert](#input\_tls\_cert) | Netbox tls certificate | `string` | n/a | yes |
-| <a name="input_tls_key"></a> [tls\_key](#input\_tls\_key) | Netbox tls certificate key | `string` | n/a | yes |
+| <a name="input_tls_cert"></a> [tls\_cert](#input\_tls\_cert) | Netbox tls certificate | `string` | `""` | no |
+| <a name="input_tls_key"></a> [tls\_key](#input\_tls\_key) | Netbox tls certificate key | `string` | `""` | no |
+| <a name="input_use_ingress"></a> [use\_ingress](#input\_use\_ingress) | Use ingress | `bool` | `true` | no |
 
 ## Outputs
 
