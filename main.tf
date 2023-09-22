@@ -16,11 +16,12 @@ module "netbox_postgresql" {
 
 module "gitea_postgresql" {
   source        = "./modules/postgresql"
+  count         = var.enable_gitea ? 1 : 0
   name          = "postgresql-gitea"
   psql_version  = "15-alpine"
-  psql_user     = module.netbox_gitea.gitea_db_user
+  psql_user     = var.enable_gitea ? module.netbox_gitea.gitea_db_user : ""
   psql_password = var.gitea_db_password
-  psql_db       = module.netbox_gitea.gitea_db
+  psql_db       = var.enable_gitea ? module.netbox_gitea.gitea_db : ""
 }
 
 module "netbox_redis" {
@@ -49,7 +50,8 @@ module "netbox_netbox" {
 
 module "netbox_gitea" {
   source            = "./modules/gitea"
+  count             = var.enable_gitea ? 1 : 0
   gitea_version     = "1.20.4"
   gitea_db_password = var.gitea_db_password
-  gitea_db_service  = module.gitea_postgresql.service
+  gitea_db_service  = var.enable_gitea ? module.gitea_postgresql.service : ""
 }

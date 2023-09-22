@@ -54,3 +54,9 @@ variable "netbox_tls_key" {
   type        = string
   description = "Netbox tls certificate key"
 }
+
+variable "enable_gitea" {
+  type        = bool
+  description = "Deploy gitea related resources"
+  default     = false
+}

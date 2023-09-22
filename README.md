@@ -33,6 +33,7 @@ No resources.
 | <a name="input_client_certificate"></a> [client\_certificate](#input\_client\_certificate) | Client certificate | `string` | n/a | yes |
 | <a name="input_client_key"></a> [client\_key](#input\_client\_key) | Client key | `string` | n/a | yes |
 | <a name="input_cluster_ca_certificate"></a> [cluster\_ca\_certificate](#input\_cluster\_ca\_certificate) | Cluster certificate | `string` | n/a | yes |
+| <a name="input_enable_gitea"></a> [enable\_gitea](#input\_enable\_gitea) | Deploy gitea related resources | `bool` | `false` | no |
 | <a name="input_gitea_db_password"></a> [gitea\_db\_password](#input\_gitea\_db\_password) | Gitea database password | `string` | n/a | yes |
 | <a name="input_host"></a> [host](#input\_host) | Kubernetes cluster | `string` | n/a | yes |
 | <a name="input_netbox_password"></a> [netbox\_password](#input\_netbox\_password) | Netbox database password | `string` | n/a | yes |
