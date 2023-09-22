@@ -12,13 +12,13 @@ variable "fqdn" {
 
 variable "tls_cert" {
   type        = string
-  description = "Netbox tls certificate"
+  description = "Netbox tls certificate base64 encoded"
   sensitive   = true
 }
 
 variable "tls_key" {
   type        = string
-  description = "Netbox tls certificate key"
+  description = "Netbox tls certificate key base64 encoded"
   sensitive   = true
 }
 
