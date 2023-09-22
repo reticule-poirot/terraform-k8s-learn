@@ -1,11 +1,17 @@
 locals {
   netbox_volumes = ["media", "reports", "scripts"]
   netbox_secrets = ["db-password", "redis-password", "redis-cache-password", "secret-key"]
+  labels = {
+    name       = var.name
+    version    = var.netbox_version
+    managed-by = "terraform"
+  }
 }
 
 resource "kubernetes_config_map" "netbox_env" {
   metadata {
-    name = "${var.name}-env"
+    name   = "${var.name}-env"
+    labels = local.labels
   }
   data = {
     ALLOWED_HOSTS    = var.fqdn
@@ -24,7 +30,8 @@ resource "kubernetes_config_map" "netbox_env" {
 resource "kubernetes_secret" "netbox_tls" {
   count = var.use_ingress && var.tls_cert != "" && var.tls_key != "" ? 1 : 0
   metadata {
-    name = "${var.name}-tls"
+    name   = "${var.name}-tls"
+    labels = local.labels
   }
   type = "tls"
   data = {
@@ -35,7 +42,8 @@ resource "kubernetes_secret" "netbox_tls" {
 
 resource "kubernetes_secret" "netbox_secret" {
   metadata {
-    name = "${var.name}-secret"
+    name   = "${var.name}-secret"
+    labels = local.labels
   }
   data = {
     db_password : var.netbox_db_password
@@ -48,7 +56,8 @@ resource "kubernetes_secret" "netbox_secret" {
 resource "kubernetes_persistent_volume_claim" "netbox_pvc" {
   for_each = toset(local.netbox_volumes)
   metadata {
-    name = "${var.name}-${each.value}-pvc"
+    name   = "${var.name}-${each.value}-pvc"
+    labels = local.labels
   }
   spec {
     access_modes = ["ReadWriteOnce"]
@@ -62,7 +71,8 @@ resource "kubernetes_persistent_volume_claim" "netbox_pvc" {
 
 resource "kubernetes_service" "netbox_service" {
   metadata {
-    name = var.name
+    name   = var.name
+    labels = local.labels
   }
   spec {
     selector = {
@@ -77,7 +87,8 @@ resource "kubernetes_service" "netbox_service" {
 resource "kubernetes_ingress_v1" "netbox" {
   count = var.use_ingress && var.tls_cert != "" && var.tls_key != "" ? 1 : 0
   metadata {
-    name = "netbox-ingres"
+    name   = "${var.name}-ingres"
+    labels = local.labels
   }
   spec {
     tls {
@@ -109,7 +120,8 @@ resource "kubernetes_ingress_v1" "netbox" {
 
 resource "kubernetes_deployment" "netbox" {
   metadata {
-    name = var.name
+    name   = var.name
+    labels = local.labels
   }
   spec {
     selector {
@@ -119,9 +131,7 @@ resource "kubernetes_deployment" "netbox" {
     }
     template {
       metadata {
-        labels = {
-          name = var.name
-        }
+        labels = local.labels
       }
       spec {
         container {
@@ -232,7 +242,8 @@ resource "kubernetes_deployment" "netbox" {
 
 resource "kubernetes_cron_job_v1" "netbox_cron" {
   metadata {
-    name = "${var.name}-housekeeper"
+    name   = "${var.name}-housekeeper"
+    labels = local.labels
   }
   spec {
     schedule = "0 1 * * *"
