@@ -86,17 +86,6 @@ resource "kubernetes_deployment" "gitea" {
           port {
             container_port = 2222
           }
-          liveness_probe {
-            http_get {
-              path = "/api/healthz"
-              port = "gitea-web-http"
-            }
-            initial_delay_seconds = 120
-            timeout_seconds       = 5
-            period_seconds        = 60
-            success_threshold     = 1
-            failure_threshold     = 5
-          }
           env_from {
             config_map_ref {
               name = kubernetes_config_map.gitea_env.metadata[0].name
