@@ -141,12 +141,19 @@ resource "kubernetes_deployment" "netbox" {
           port {
             container_port = 8080
           }
+          startup_probe {
+            exec {
+              command = ["/bin/sh", "-c", "ps aux | grep [u]nitd"]
+            }
+            period_seconds    = 10
+            failure_threshold = 30
+          }
           liveness_probe {
-            http_get {
-              port = "8080"
-              path = "/api/"
+            tcp_socket {
+              port = 8080
             }
             initial_delay_seconds = 240
+            timeout_seconds       = 3
           }
           env_from {
             config_map_ref {
