@@ -108,7 +108,7 @@ resource "kubernetes_deployment" "postgresql" {
           port {
             container_port = var.psql_port
           }
-          readiness_probe {
+          startup_probe {
             exec {
               command = ["/bin/sh", "-c", "pg_isready"]
             }
