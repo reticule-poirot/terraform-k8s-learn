@@ -134,6 +134,12 @@ resource "kubernetes_deployment" "netbox" {
         labels = local.labels
       }
       spec {
+        init_container {
+          name              = "${var.name}-init"
+          image_pull_policy = "IfNotPresent"
+          image             = "busybox:1.36.1"
+          command           = ["/bin/sh", "-c", "sleep 10"]
+        }
         container {
           image             = "netboxcommunity/netbox:${var.netbox_version}"
           image_pull_policy = "IfNotPresent"
