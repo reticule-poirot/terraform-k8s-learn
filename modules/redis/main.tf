@@ -1,6 +1,15 @@
+locals {
+  labels = {
+    name       = var.name
+    version    = var.redis_version
+    managed-by = "terraform"
+  }
+}
+
 resource "kubernetes_secret" "redis_secret" {
   metadata {
-    name = "${var.name}-secret"
+    name   = "${var.name}-secret"
+    labels = local.labels
   }
   data = {
     redis_password : var.redis_password
@@ -9,7 +18,8 @@ resource "kubernetes_secret" "redis_secret" {
 
 resource "kubernetes_persistent_volume_claim" "redis_pvc" {
   metadata {
-    name = "${var.name}-pvc"
+    name   = "${var.name}-pvc"
+    labels = local.labels
   }
   spec {
     access_modes = ["ReadWriteOnce"]
@@ -23,7 +33,8 @@ resource "kubernetes_persistent_volume_claim" "redis_pvc" {
 
 resource "kubernetes_service" "redis_service" {
   metadata {
-    name = var.name
+    name   = var.name
+    labels = local.labels
   }
   spec {
     selector = {
@@ -37,7 +48,8 @@ resource "kubernetes_service" "redis_service" {
 
 resource "kubernetes_deployment" "redis_deployment" {
   metadata {
-    name = var.name
+    name   = var.name
+    labels = local.labels
   }
   spec {
     selector {
@@ -47,9 +59,7 @@ resource "kubernetes_deployment" "redis_deployment" {
     }
     template {
       metadata {
-        labels = {
-          name = var.name
-        }
+        labels = local.labels
       }
       spec {
         container {
