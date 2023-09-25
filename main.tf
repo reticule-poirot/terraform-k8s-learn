@@ -55,3 +55,10 @@ module "netbox_gitea" {
   gitea_db_password = var.gitea_db_password
   gitea_db_service  = var.enable_gitea ? module.gitea_postgresql.service : ""
 }
+
+module "netbox_prometheus" {
+  source             = "./modules/prometheus"
+  count              = var.enable_prometheus ? 1 : 0
+  prometheus_version = "v2.47.0"
+  prometheus_config  = templatefile("${path.module}/prometheus.yml.tftpl", {})
+}

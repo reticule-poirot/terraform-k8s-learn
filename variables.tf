@@ -60,3 +60,9 @@ variable "enable_gitea" {
   description = "Deploy gitea related resources"
   default     = false
 }
+
+variable "enable_prometheus" {
+  type        = bool
+  description = "Deploy prometheus related resources"
+  default     = false
+}
