@@ -20,6 +20,7 @@ No providers.
 | <a name="module_netbox_gitea"></a> [netbox\_gitea](#module\_netbox\_gitea) | ./modules/gitea | n/a |
 | <a name="module_netbox_netbox"></a> [netbox\_netbox](#module\_netbox\_netbox) | ./modules/netbox | n/a |
 | <a name="module_netbox_postgresql"></a> [netbox\_postgresql](#module\_netbox\_postgresql) | ./modules/postgresql | n/a |
+| <a name="module_netbox_prometheus"></a> [netbox\_prometheus](#module\_netbox\_prometheus) | ./modules/prometheus | n/a |
 | <a name="module_netbox_redis"></a> [netbox\_redis](#module\_netbox\_redis) | ./modules/redis | n/a |
 
 ## Resources
@@ -34,6 +35,7 @@ No resources.
 | <a name="input_client_key"></a> [client\_key](#input\_client\_key) | Client key | `string` | n/a | yes |
 | <a name="input_cluster_ca_certificate"></a> [cluster\_ca\_certificate](#input\_cluster\_ca\_certificate) | Cluster certificate | `string` | n/a | yes |
 | <a name="input_enable_gitea"></a> [enable\_gitea](#input\_enable\_gitea) | Deploy gitea related resources | `bool` | `false` | no |
+| <a name="input_enable_prometheus"></a> [enable\_prometheus](#input\_enable\_prometheus) | Deploy prometheus related resources | `bool` | `false` | no |
 | <a name="input_gitea_db_password"></a> [gitea\_db\_password](#input\_gitea\_db\_password) | Gitea database password | `string` | n/a | yes |
 | <a name="input_host"></a> [host](#input\_host) | Kubernetes cluster | `string` | n/a | yes |
 | <a name="input_netbox_password"></a> [netbox\_password](#input\_netbox\_password) | Netbox database password | `string` | n/a | yes |
