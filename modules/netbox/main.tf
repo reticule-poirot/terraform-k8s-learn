@@ -241,7 +241,7 @@ resource "kubernetes_deployment" "netbox" {
     kubernetes_service.netbox_service
   ]
   timeouts {
-    create = "2m"
+    create = "5m"
     update = "2m"
   }
 }
