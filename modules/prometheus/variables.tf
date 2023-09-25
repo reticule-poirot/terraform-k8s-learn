@@ -10,6 +10,12 @@ variable "prometheus_version" {
   default     = "latest"
 }
 
+variable "fqdn" {
+  type        = string
+  description = "Prometheus fqdn"
+  default     = "prometheus.example.local"
+}
+
 variable "prometheus_config" {
   type        = string
   description = "Prometheus config"

@@ -43,6 +43,35 @@ resource "kubernetes_service" "prometheus_service" {
   }
 }
 
+resource "kubernetes_ingress_v1" "netbox" {
+  metadata {
+    name   = "${var.name}-ingres"
+    labels = local.labels
+  }
+  spec {
+    ingress_class_name = "nginx"
+    rule {
+      host = var.fqdn
+      http {
+        path {
+          path = "/"
+          backend {
+            service {
+              name = kubernetes_service.prometheus_service.metadata[0].name
+              port {
+                number = 9090
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  depends_on = [
+    kubernetes_service.prometheus_service
+  ]
+}
+
 resource "kubernetes_deployment" "prometheus" {
   metadata {
     name   = var.name
