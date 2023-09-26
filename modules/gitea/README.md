@@ -41,6 +41,6 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_gitea_db"></a> [gitea\_db](#output\_gitea\_db) | n/a |
-| <a name="output_gitea_db_user"></a> [gitea\_db\_user](#output\_gitea\_db\_user) | n/a |
+| <a name="output_gitea_db"></a> [gitea\_db](#output\_gitea\_db) | Gitea db |
+| <a name="output_gitea_db_user"></a> [gitea\_db\_user](#output\_gitea\_db\_user) | Gitea db user |
 <!-- END_TF_DOCS -->

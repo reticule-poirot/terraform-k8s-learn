@@ -54,8 +54,8 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_name"></a> [name](#output\_name) | n/a |
-| <a name="output_netbox_db"></a> [netbox\_db](#output\_netbox\_db) | n/a |
-| <a name="output_netbox_db_user"></a> [netbox\_db\_user](#output\_netbox\_db\_user) | n/a |
-| <a name="output_service"></a> [service](#output\_service) | n/a |
+| <a name="output_name"></a> [name](#output\_name) | Netbox pod name |
+| <a name="output_netbox_db"></a> [netbox\_db](#output\_netbox\_db) | Netbox database name |
+| <a name="output_netbox_db_user"></a> [netbox\_db\_user](#output\_netbox\_db\_user) | Netbox db user |
+| <a name="output_service"></a> [service](#output\_service) | Netbox service name and port |
 <!-- END_TF_DOCS -->
