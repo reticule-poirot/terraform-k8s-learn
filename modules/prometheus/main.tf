@@ -8,7 +8,7 @@ locals {
 
 resource "kubernetes_config_map" "prometheus_config" {
   metadata {
-    name = var.name
+    name = "${var.name}-config"
   }
   data = {
     "prometheus.yml" : var.prometheus_config

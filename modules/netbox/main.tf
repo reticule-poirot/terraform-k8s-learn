@@ -14,7 +14,7 @@ resource "kubernetes_config_map" "netbox_env" {
     labels = local.labels
   }
   data = {
-    ALLOWED_HOSTS    = var.fqdn
+    ALLOWED_HOSTS    = "${var.fqdn} ${var.name}"
     DB_NAME          = var.netbox_db
     DB_PORT          = var.netbox_db_port
     DB_USER          = var.netbox_db_user
@@ -24,6 +24,7 @@ resource "kubernetes_config_map" "netbox_env" {
     REDIS_CACHE_HOST = var.redis_cache_service
     REDIS_CACHE_PORT = var.redis_port
     DB_WAIT_DEBUG    = 1
+    METRICS_ENABLED  = var.metrics_enable
   }
 }
 

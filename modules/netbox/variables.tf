@@ -103,6 +103,12 @@ variable "secret_key" {
   }
 }
 
+variable "metrics_enable" {
+  type        = bool
+  description = "Prometheus metrics enable"
+  default     = false
+}
+
 variable "use_ingress" {
   type        = bool
   description = "Use ingress"

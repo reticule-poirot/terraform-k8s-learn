@@ -44,6 +44,7 @@ module "netbox_netbox" {
   redis_service        = module.netbox_redis["redis"].service
   redis_cache_service  = module.netbox_redis["redis-cache"].service
   secret_key           = var.secret_key
+  metrics_enable       = true
   tls_cert             = base64decode(var.netbox_tls_cert)
   tls_key              = base64decode(var.netbox_tls_key)
 }
@@ -60,5 +61,8 @@ module "netbox_prometheus" {
   source             = "./modules/prometheus"
   count              = var.enable_prometheus ? 1 : 0
   prometheus_version = "v2.47.0"
-  prometheus_config  = templatefile("${path.module}/prometheus.yml.tftpl", {})
+  prometheus_config = templatefile("${path.module}/prometheus.yml.tftpl",
+    { job_name = module.netbox_netbox.name,
+      service  = module.netbox_netbox.service
+  })
 }
