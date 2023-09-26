@@ -31,6 +31,7 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_fqdn"></a> [fqdn](#input\_fqdn) | Netbox fqdn | `string` | `"netbox.example.local"` | no |
+| <a name="input_metrics_enable"></a> [metrics\_enable](#input\_metrics\_enable) | Prometheus metrics enable | `bool` | `false` | no |
 | <a name="input_name"></a> [name](#input\_name) | Netbox pod name | `string` | `"netbox"` | no |
 | <a name="input_netbox_data_size"></a> [netbox\_data\_size](#input\_netbox\_data\_size) | Netbox data volume size | `string` | `"0.5Gi"` | no |
 | <a name="input_netbox_db"></a> [netbox\_db](#input\_netbox\_db) | Netbox database name | `string` | `"netbox"` | no |
@@ -53,6 +54,8 @@ No modules.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_name"></a> [name](#output\_name) | n/a |
 | <a name="output_netbox_db"></a> [netbox\_db](#output\_netbox\_db) | n/a |
 | <a name="output_netbox_db_user"></a> [netbox\_db\_user](#output\_netbox\_db\_user) | n/a |
+| <a name="output_service"></a> [service](#output\_service) | n/a |
 <!-- END_TF_DOCS -->
