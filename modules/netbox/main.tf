@@ -6,6 +6,7 @@ locals {
     version    = var.netbox_version
     managed-by = "terraform"
   }
+  allowed_hosts = [var.fqdn, var.name]
 }
 
 resource "kubernetes_config_map" "netbox_env" {
@@ -14,7 +15,7 @@ resource "kubernetes_config_map" "netbox_env" {
     labels = local.labels
   }
   data = {
-    ALLOWED_HOSTS    = "${var.fqdn} ${var.name}"
+    ALLOWED_HOSTS    = join(" ", local.allowed_hosts)
     DB_NAME          = var.netbox_db
     DB_PORT          = var.netbox_db_port
     DB_USER          = var.netbox_db_user
