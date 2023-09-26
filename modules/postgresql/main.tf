@@ -1,9 +1,10 @@
 locals {
   psql_secrets = ["postgres-password", "postgres-user", "postgres-db"]
   labels = {
-    name       = var.name
-    version    = var.psql_version
-    managed-by = "terraform"
+    "app.kubernetes.io/name"       = var.name
+    "app.kubernetes.io/version"    = var.psql_version
+    "app.kubernetes.io/component"  = "database"
+    "app.kubernetes.io/managed-by" = "terraform"
   }
 }
 

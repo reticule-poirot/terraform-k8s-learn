@@ -1,8 +1,9 @@
 locals {
   labels = {
-    name       = var.name
-    version    = var.redis_version
-    managed-by = "terraform"
+    "app.kubernetes.io/name"       = var.name
+    "app.kubernetes.io/version"    = var.redis_version
+    "app.kubernetes.io/component"  = "kvstorage"
+    "app.kubernetes.io/managed-by" = "terraform"
   }
 }
 
@@ -38,7 +39,7 @@ resource "kubernetes_service" "redis_service" {
   }
   spec {
     selector = {
-      name = var.name
+      "app.kubernetes.io/name" = var.name
     }
     port {
       port = 6379
@@ -54,7 +55,7 @@ resource "kubernetes_deployment" "redis_deployment" {
   spec {
     selector {
       match_labels = {
-        name = var.name
+        "app.kubernetes.io/name" = var.name
       }
     }
     template {

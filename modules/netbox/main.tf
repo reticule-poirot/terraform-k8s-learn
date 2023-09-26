@@ -2,9 +2,10 @@ locals {
   netbox_volumes = ["media", "reports", "scripts"]
   netbox_secrets = ["db-password", "redis-password", "redis-cache-password", "secret-key"]
   labels = {
-    name       = var.name
-    version    = var.netbox_version
-    managed-by = "terraform"
+    "app.kubernetes.io/name"       = var.name
+    "app.kubernetes.io/version"    = var.netbox_version
+    "app.kubernetes.io/component"  = "server"
+    "app.kubernetes.io/managed-by" = "terraform"
   }
   allowed_hosts = [var.fqdn, var.name]
 }
@@ -78,7 +79,7 @@ resource "kubernetes_service" "netbox_service" {
   }
   spec {
     selector = {
-      name = var.name
+      "app.kubernetes.io/name" = var.name
     }
     port {
       port = 8080
@@ -128,7 +129,7 @@ resource "kubernetes_deployment" "netbox" {
   spec {
     selector {
       match_labels = {
-        name = var.name
+        "app.kubernetes.io/name" = var.name
       }
     }
     template {
