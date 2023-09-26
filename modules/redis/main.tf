@@ -42,7 +42,7 @@ resource "kubernetes_service" "redis_service" {
       "app.kubernetes.io/name" = var.name
     }
     port {
-      port = 6379
+      port = var.redis_port
     }
   }
 }
@@ -69,7 +69,7 @@ resource "kubernetes_deployment" "redis_deployment" {
           name              = var.name
           command           = var.command
           port {
-            container_port = 6379
+            container_port = var.redis_port
           }
           readiness_probe {
             exec {

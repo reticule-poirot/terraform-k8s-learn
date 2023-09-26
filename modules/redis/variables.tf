@@ -3,6 +3,12 @@ variable "redis_version" {
   description = "Redis version"
 }
 
+variable "redis_port" {
+  type        = number
+  description = "Redis port"
+  default     = 6379
+}
+
 variable "name" {
   type        = string
   description = "Redis pod name"

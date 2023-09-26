@@ -271,12 +271,6 @@ resource "kubernetes_cron_job_v1" "netbox_cron" {
               image_pull_policy = "IfNotPresent"
               name              = "${var.name}-housekeeper"
               command           = ["/bin/sh", "-c", "/opt/netbox/venv/bin/python /opt/netbox/netbox/manage.py housekeeping"]
-              liveness_probe {
-                exec {
-                  command = ["/bin/sh", "-c", "ps -aux | grep -v grep | grep -q housekeeping || exit 1"]
-                }
-                initial_delay_seconds = 10
-              }
               env_from {
                 config_map_ref {
                   name = kubernetes_config_map.netbox_env.metadata[0].name

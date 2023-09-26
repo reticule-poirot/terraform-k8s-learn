@@ -38,11 +38,11 @@ module "netbox_netbox" {
   netbox_version       = "v3.6.2"
   fqdn                 = "netbox.example.local"
   netbox_db_password   = var.netbox_password
-  netbox_db_service    = module.netbox_postgresql.service
+  netbox_db_service    = module.netbox_postgresql.service.service
   redis_password       = var.redis_password
   redis_cache_password = var.redis_cache_password
-  redis_service        = module.netbox_redis["redis"].service
-  redis_cache_service  = module.netbox_redis["redis-cache"].service
+  redis_service        = module.netbox_redis["redis"].service.service
+  redis_cache_service  = module.netbox_redis["redis-cache"].service.service
   secret_key           = var.secret_key
   metrics_enable       = true
   tls_cert             = base64decode(var.netbox_tls_cert)
@@ -54,7 +54,7 @@ module "netbox_gitea" {
   count             = var.enable_gitea ? 1 : 0
   gitea_version     = "1.20.4"
   gitea_db_password = var.gitea_db_password
-  gitea_db_service  = var.enable_gitea ? module.gitea_postgresql.service : ""
+  gitea_db_service  = var.enable_gitea ? module.gitea_postgresql.service.service : ""
 }
 
 module "netbox_prometheus" {

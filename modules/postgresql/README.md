@@ -40,5 +40,5 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_service"></a> [service](#output\_service) | Postgresql service name |
+| <a name="output_service"></a> [service](#output\_service) | Postgresql service name and port |
 <!-- END_TF_DOCS -->
