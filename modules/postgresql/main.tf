@@ -42,7 +42,7 @@ resource "kubernetes_persistent_volume" "postgresql_pv" {
     capacity = {
       storage = var.psql_data_size
     }
-    storage_class_name = "local"
+    storage_class_name = "hostpath"
     persistent_volume_source {
       host_path {
         path = "/mnt/${var.name}_psql_data"
@@ -63,7 +63,7 @@ resource "kubernetes_persistent_volume_claim" "postgresql_pvc" {
         storage = var.psql_data_size
       }
     }
-    storage_class_name = "local"
+    storage_class_name = "hostpath"
     selector {
       match_labels = local.labels
     }
