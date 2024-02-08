@@ -84,8 +84,7 @@ resource "kubernetes_service" "postgresql_service" {
   }
 }
 
-
-resource "kubernetes_deployment" "postgresql" {
+resource "kubernetes_stateful_set" "postgresql" {
   metadata {
     name = var.name
   }
@@ -95,6 +94,7 @@ resource "kubernetes_deployment" "postgresql" {
         name = var.name
       }
     }
+    service_name = kubernetes_service.postgresql_service.metadata[0].name
     template {
       metadata {
         labels = {

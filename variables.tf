@@ -53,6 +53,7 @@ variable "netbox_tls_cert" {
 variable "netbox_tls_key" {
   type        = string
   description = "Netbox tls certificate key"
+  sensitive   = true
 }
 
 variable "enable_gitea" {

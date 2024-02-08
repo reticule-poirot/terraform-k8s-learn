@@ -35,7 +35,7 @@ module "netbox_redis" {
 
 module "netbox_netbox" {
   source               = "./modules/netbox"
-  netbox_version       = "v3.6.2"
+  netbox_version       = "v3.7.2"
   fqdn                 = "netbox.example.local"
   netbox_db_password   = var.netbox_password
   netbox_db_service    = module.netbox_postgresql.service.service
