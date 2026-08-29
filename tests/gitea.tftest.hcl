@@ -20,7 +20,7 @@ run "gitea_wiring" {
   }
 
   assert {
-    condition     = kubernetes_deployment_v1.gitea.spec[0].template[0].spec[0].container[0].image == "gitea/gitea:1.22.3"
+    condition     = kubernetes_stateful_set_v1.gitea.spec[0].template[0].spec[0].container[0].image == "gitea/gitea:1.22.3"
     error_message = "image must be gitea/gitea:<gitea_version>"
   }
 
@@ -45,17 +45,17 @@ run "gitea_wiring" {
   }
 
   assert {
-    condition     = length(kubernetes_persistent_volume_claim_v1.gitea_pvc) == 2
-    error_message = "module must create data and config PVCs"
+    condition     = length(kubernetes_stateful_set_v1.gitea.spec[0].volume_claim_template) == 2
+    error_message = "module must define data and config volume_claim_templates"
   }
 
   assert {
-    condition     = alltrue([for m in kubernetes_deployment_v1.gitea.spec[0].template[0].spec[0].container[0].volume_mount : startswith(m.mount_path, "/")])
+    condition     = alltrue([for m in kubernetes_stateful_set_v1.gitea.spec[0].template[0].spec[0].container[0].volume_mount : startswith(m.mount_path, "/")])
     error_message = "volume mount paths must be absolute"
   }
 
   assert {
-    condition     = kubernetes_deployment_v1.gitea.metadata[0].namespace == "test-ns"
+    condition     = kubernetes_stateful_set_v1.gitea.metadata[0].namespace == "test-ns"
     error_message = "deployment must land in var.namespace"
   }
 }

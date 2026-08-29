@@ -21,7 +21,7 @@ run "redis_defaults" {
   }
 
   assert {
-    condition     = kubernetes_deployment_v1.redis_deployment.spec[0].template[0].spec[0].container[0].image == "redis:7-alpine"
+    condition     = kubernetes_stateful_set_v1.redis.spec[0].template[0].spec[0].container[0].image == "redis:7-alpine"
     error_message = "container image must be redis:<redis_version>"
   }
 
@@ -36,17 +36,17 @@ run "redis_defaults" {
   }
 
   assert {
-    condition     = kubernetes_persistent_volume_claim_v1.redis_pvc.spec[0].resources[0].requests.storage == "1Gi"
-    error_message = "pvc must request the default 1Gi"
+    condition     = kubernetes_stateful_set_v1.redis.spec[0].volume_claim_template[0].spec[0].resources[0].requests.storage == "1Gi"
+    error_message = "volume_claim_template must request the default 1Gi"
   }
 
   assert {
-    condition     = kubernetes_deployment_v1.redis_deployment.metadata[0].namespace == "test-ns"
+    condition     = kubernetes_stateful_set_v1.redis.metadata[0].namespace == "test-ns"
     error_message = "resources must land in var.namespace"
   }
 
   assert {
-    condition     = kubernetes_deployment_v1.redis_deployment.spec[0].template[0].spec[0].container[0].security_context[0].allow_privilege_escalation == false
+    condition     = kubernetes_stateful_set_v1.redis.spec[0].template[0].spec[0].container[0].security_context[0].allow_privilege_escalation == false
     error_message = "container must set allowPrivilegeEscalation = false"
   }
 }
@@ -68,7 +68,7 @@ run "redis_cache_overrides" {
   }
 
   assert {
-    condition     = kubernetes_deployment_v1.redis_deployment.spec[0].template[0].spec[0].container[0].image == "redis:7.4-alpine"
+    condition     = kubernetes_stateful_set_v1.redis.spec[0].template[0].spec[0].container[0].image == "redis:7.4-alpine"
     error_message = "image tag must follow redis_version"
   }
 
@@ -78,7 +78,7 @@ run "redis_cache_overrides" {
   }
 
   assert {
-    condition     = kubernetes_deployment_v1.redis_deployment.spec[0].template[0].spec[0].container[0].command[2] == "redis-server --save ''"
+    condition     = kubernetes_stateful_set_v1.redis.spec[0].template[0].spec[0].container[0].command[2] == "redis-server --save ''"
     error_message = "container command must come from var.command"
   }
 }

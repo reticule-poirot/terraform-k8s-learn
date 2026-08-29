@@ -59,26 +59,6 @@ resource "kubernetes_secret_v1" "netbox_secret" {
   }
 }
 
-resource "kubernetes_persistent_volume_claim_v1" "netbox_pvc" {
-  for_each = toset(local.netbox_volumes)
-  # Default StorageClass is WaitForFirstConsumer — bind happens when the pod
-  # schedules, so don't block apply on Bound.
-  wait_until_bound = false
-  metadata {
-    name      = "${var.name}-${each.value}-pvc"
-    namespace = var.namespace
-    labels    = local.labels
-  }
-  spec {
-    access_modes = ["ReadWriteOnce"]
-    resources {
-      requests = {
-        storage = var.netbox_data_size
-      }
-    }
-  }
-}
-
 resource "kubernetes_service_v1" "netbox_service" {
   metadata {
     name      = var.name
@@ -98,7 +78,7 @@ resource "kubernetes_service_v1" "netbox_service" {
 resource "kubernetes_ingress_v1" "netbox" {
   count = var.use_ingress && var.tls_cert != null && var.tls_key != null ? 1 : 0
   metadata {
-    name      = "${var.name}-ingres"
+    name      = "${var.name}-ingress"
     namespace = var.namespace
     labels    = local.labels
   }
@@ -130,13 +110,14 @@ resource "kubernetes_ingress_v1" "netbox" {
   ]
 }
 
-resource "kubernetes_deployment_v1" "netbox" {
+resource "kubernetes_stateful_set_v1" "netbox" {
   metadata {
     name      = var.name
     namespace = var.namespace
     labels    = local.labels
   }
   spec {
+    service_name = kubernetes_service_v1.netbox_service.metadata[0].name
     selector {
       match_labels = {
         "app.kubernetes.io/name" = var.name
@@ -214,7 +195,6 @@ resource "kubernetes_deployment_v1" "netbox" {
             content {
               mount_path = "/opt/netbox/netbox/${volume_mount.value}"
               name       = volume_mount.value
-              read_only  = true
             }
           }
           dynamic "volume_mount" {
@@ -262,7 +242,6 @@ resource "kubernetes_deployment_v1" "netbox" {
             content {
               mount_path = "/opt/netbox/netbox/${volume_mount.value}"
               name       = volume_mount.value
-              read_only  = true
             }
           }
           dynamic "volume_mount" {
@@ -271,15 +250,6 @@ resource "kubernetes_deployment_v1" "netbox" {
               mount_path = "/var/run/secrets/${replace(volume_mount.value, "-", "_")}"
               name       = "${volume_mount.value}-secret"
               sub_path   = replace(volume_mount.value, "-", "_")
-            }
-          }
-        }
-        dynamic "volume" {
-          for_each = toset(local.netbox_volumes)
-          content {
-            name = volume.value
-            persistent_volume_claim {
-              claim_name = "${var.name}-${volume.value}-pvc"
             }
           }
         }
@@ -298,16 +268,33 @@ resource "kubernetes_deployment_v1" "netbox" {
         }
       }
     }
+    dynamic "volume_claim_template" {
+      for_each = toset(local.netbox_volumes)
+      content {
+        metadata {
+          name      = volume_claim_template.value
+          namespace = var.namespace
+          labels    = local.labels
+        }
+        spec {
+          access_modes = ["ReadWriteOnce"]
+          resources {
+            requests = {
+              storage = var.netbox_data_size
+            }
+          }
+        }
+      }
+    }
   }
   depends_on = [
     kubernetes_config_map_v1.netbox_env,
     kubernetes_secret_v1.netbox_secret,
-    kubernetes_persistent_volume_claim_v1.netbox_pvc,
     kubernetes_service_v1.netbox_service
   ]
   timeouts {
     create = "10m"
-    update = "2m"
+    update = "5m"
   }
 }
 
@@ -359,29 +346,14 @@ resource "kubernetes_cron_job_v1" "netbox_cron" {
                   name = kubernetes_config_map_v1.netbox_env.metadata[0].name
                 }
               }
-              dynamic "volume_mount" {
-                for_each = toset(local.netbox_volumes)
-                content {
-                  mount_path = "/opt/netbox/netbox/${volume_mount.value}"
-                  name       = volume_mount.value
-                  read_only  = true
-                }
-              }
+              # housekeeping is database-only — it does not touch
+              # media/reports/scripts, so those volumes are not mounted here.
               dynamic "volume_mount" {
                 for_each = toset(local.netbox_secrets)
                 content {
                   mount_path = "/var/run/secrets/${replace(volume_mount.value, "-", "_")}"
                   name       = "${volume_mount.value}-secret"
                   sub_path   = replace(volume_mount.value, "-", "_")
-                }
-              }
-            }
-            dynamic "volume" {
-              for_each = toset(local.netbox_volumes)
-              content {
-                name = volume.value
-                persistent_volume_claim {
-                  claim_name = "${var.name}-${volume.value}-pvc"
                 }
               }
             }

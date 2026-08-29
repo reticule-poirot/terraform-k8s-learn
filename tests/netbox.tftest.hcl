@@ -23,17 +23,17 @@ run "netbox_defaults" {
   }
 
   assert {
-    condition     = kubernetes_deployment_v1.netbox.spec[0].template[0].spec[0].init_container[0].image == "busybox:1.37.0"
+    condition     = kubernetes_stateful_set_v1.netbox.spec[0].template[0].spec[0].init_container[0].image == "busybox:1.37.0"
     error_message = "init container image must be busybox:<busybox_version>"
   }
 
   assert {
-    condition     = kubernetes_deployment_v1.netbox.spec[0].template[0].spec[0].container[0].image == "netboxcommunity/netbox:v4.1.7"
+    condition     = kubernetes_stateful_set_v1.netbox.spec[0].template[0].spec[0].container[0].image == "netboxcommunity/netbox:v4.1.7"
     error_message = "server image must be netboxcommunity/netbox:<netbox_version>"
   }
 
   assert {
-    condition     = kubernetes_deployment_v1.netbox.spec[0].template[0].spec[0].container[1].name == "netbox-worker"
+    condition     = kubernetes_stateful_set_v1.netbox.spec[0].template[0].spec[0].container[1].name == "netbox-worker"
     error_message = "second container must be the rq worker"
   }
 
@@ -48,8 +48,8 @@ run "netbox_defaults" {
   }
 
   assert {
-    condition     = length(kubernetes_persistent_volume_claim_v1.netbox_pvc) == 3
-    error_message = "module must create media, reports and scripts PVCs"
+    condition     = length(kubernetes_stateful_set_v1.netbox.spec[0].volume_claim_template) == 3
+    error_message = "module must define media, reports and scripts volume_claim_templates"
   }
 
   assert {
@@ -63,12 +63,12 @@ run "netbox_defaults" {
   }
 
   assert {
-    condition     = kubernetes_deployment_v1.netbox.metadata[0].namespace == "test-ns"
+    condition     = kubernetes_stateful_set_v1.netbox.metadata[0].namespace == "test-ns"
     error_message = "deployment must land in var.namespace"
   }
 
   assert {
-    condition     = contains(kubernetes_deployment_v1.netbox.spec[0].template[0].spec[0].container[0].security_context[0].capabilities[0].drop, "ALL")
+    condition     = contains(kubernetes_stateful_set_v1.netbox.spec[0].template[0].spec[0].container[0].security_context[0].capabilities[0].drop, "ALL")
     error_message = "server container must drop all capabilities"
   }
 }

@@ -25,25 +25,6 @@ resource "kubernetes_secret_v1" "gitea_secret" {
   }
 }
 
-resource "kubernetes_persistent_volume_claim_v1" "gitea_pvc" {
-  for_each = toset(local.gitea_volumes)
-  # Default StorageClass is WaitForFirstConsumer — bind happens when the pod
-  # schedules, so don't block apply on Bound.
-  wait_until_bound = false
-  metadata {
-    name      = "${var.name}-${each.value}-pvc"
-    namespace = var.namespace
-  }
-  spec {
-    access_modes = ["ReadWriteOnce"]
-    resources {
-      requests = {
-        storage = var.gitea_data_size
-      }
-    }
-  }
-}
-
 resource "kubernetes_service_v1" "gitea_service" {
   metadata {
     name      = var.name
@@ -65,12 +46,13 @@ resource "kubernetes_service_v1" "gitea_service" {
   }
 }
 
-resource "kubernetes_deployment_v1" "gitea" {
+resource "kubernetes_stateful_set_v1" "gitea" {
   metadata {
     name      = var.name
     namespace = var.namespace
   }
   spec {
+    service_name = kubernetes_service_v1.gitea_service.metadata[0].name
     selector {
       match_labels = {
         name = var.name
@@ -130,12 +112,20 @@ resource "kubernetes_deployment_v1" "gitea" {
             name       = "config"
           }
         }
-        dynamic "volume" {
-          for_each = toset(local.gitea_volumes)
-          content {
-            name = volume.value
-            persistent_volume_claim {
-              claim_name = "${var.name}-${volume.value}-pvc"
+      }
+    }
+    dynamic "volume_claim_template" {
+      for_each = toset(local.gitea_volumes)
+      content {
+        metadata {
+          name      = volume_claim_template.value
+          namespace = var.namespace
+        }
+        spec {
+          access_modes = ["ReadWriteOnce"]
+          resources {
+            requests = {
+              storage = var.gitea_data_size
             }
           }
         }
@@ -145,7 +135,6 @@ resource "kubernetes_deployment_v1" "gitea" {
   depends_on = [
     kubernetes_config_map_v1.gitea_env,
     kubernetes_secret_v1.gitea_secret,
-    kubernetes_persistent_volume_claim_v1.gitea_pvc,
     kubernetes_service_v1.gitea_service,
   ]
   timeouts {

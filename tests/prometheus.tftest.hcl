@@ -19,7 +19,7 @@ run "prometheus_wiring" {
   }
 
   assert {
-    condition     = kubernetes_deployment_v1.prometheus.spec[0].template[0].spec[0].container[0].image == "prom/prometheus:v3.1.0"
+    condition     = kubernetes_stateful_set_v1.prometheus.spec[0].template[0].spec[0].container[0].image == "prom/prometheus:v3.1.0"
     error_message = "image must be prom/prometheus:<prometheus_version>"
   }
 
@@ -34,12 +34,12 @@ run "prometheus_wiring" {
   }
 
   assert {
-    condition     = kubernetes_persistent_volume_claim_v1.prometheus_pvc.spec[0].resources[0].requests.storage == "0.5Gi"
-    error_message = "pvc must request the default 0.5Gi"
+    condition     = kubernetes_stateful_set_v1.prometheus.spec[0].volume_claim_template[0].spec[0].resources[0].requests.storage == "0.5Gi"
+    error_message = "volume_claim_template must request the default 0.5Gi"
   }
 
   assert {
-    condition     = length([for m in kubernetes_deployment_v1.prometheus.spec[0].template[0].spec[0].container[0].volume_mount : m if m.mount_path == "/prometheus"]) == 1
+    condition     = length([for m in kubernetes_stateful_set_v1.prometheus.spec[0].template[0].spec[0].container[0].volume_mount : m if m.mount_path == "/prometheus"]) == 1
     error_message = "the data PVC must be mounted at /prometheus"
   }
 

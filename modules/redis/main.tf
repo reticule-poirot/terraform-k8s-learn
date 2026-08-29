@@ -18,25 +18,6 @@ resource "kubernetes_secret_v1" "redis_secret" {
   }
 }
 
-resource "kubernetes_persistent_volume_claim_v1" "redis_pvc" {
-  # The default StorageClass binds WaitForFirstConsumer, so the PVC only binds
-  # once the Deployment pod is scheduled. Don't block apply waiting for Bound.
-  wait_until_bound = false
-  metadata {
-    name      = "${var.name}-pvc"
-    namespace = var.namespace
-    labels    = local.labels
-  }
-  spec {
-    access_modes = ["ReadWriteOnce"]
-    resources {
-      requests = {
-        storage = var.redis_data_size
-      }
-    }
-  }
-}
-
 resource "kubernetes_service_v1" "redis_service" {
   metadata {
     name      = var.name
@@ -53,13 +34,14 @@ resource "kubernetes_service_v1" "redis_service" {
   }
 }
 
-resource "kubernetes_deployment_v1" "redis_deployment" {
+resource "kubernetes_stateful_set_v1" "redis" {
   metadata {
     name      = var.name
     namespace = var.namespace
     labels    = local.labels
   }
   spec {
+    service_name = kubernetes_service_v1.redis_service.metadata[0].name
     selector {
       match_labels = {
         "app.kubernetes.io/name" = var.name
@@ -116,12 +98,6 @@ resource "kubernetes_deployment_v1" "redis_deployment" {
           }
         }
         volume {
-          name = "redis-data"
-          persistent_volume_claim {
-            claim_name = kubernetes_persistent_volume_claim_v1.redis_pvc.metadata[0].name
-          }
-        }
-        volume {
           name = "redis-password"
           secret {
             secret_name = kubernetes_secret_v1.redis_secret.metadata[0].name
@@ -133,10 +109,24 @@ resource "kubernetes_deployment_v1" "redis_deployment" {
         }
       }
     }
+    volume_claim_template {
+      metadata {
+        name      = "redis-data"
+        namespace = var.namespace
+        labels    = local.labels
+      }
+      spec {
+        access_modes = ["ReadWriteOnce"]
+        resources {
+          requests = {
+            storage = var.redis_data_size
+          }
+        }
+      }
+    }
   }
   depends_on = [
     kubernetes_secret_v1.redis_secret,
-    kubernetes_persistent_volume_claim_v1.redis_pvc,
     kubernetes_service_v1.redis_service,
   ]
   timeouts {

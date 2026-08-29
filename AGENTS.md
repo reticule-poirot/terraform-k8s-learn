@@ -29,11 +29,11 @@ reproducible results.
 | `.tflint.hcl` | tflint config (recommended preset + a few extras) |
 | `scripts/check.sh` | runs every quality gate via Docker |
 | `tests/*.tftest.hcl` | `terraform test` plan-level assertions (one file per module + root) |
-| `modules/postgresql/` | single-instance Postgres `StatefulSet` with a `volume_claim_template` |
-| `modules/redis/` | Redis `Deployment` — instantiated twice (queue broker + cache) |
-| `modules/netbox/` | NetBox server + rq-worker `Deployment`, housekeeping `CronJob`, `Service`, optional TLS `Ingress` |
-| `modules/gitea/` | optional Gitea `Deployment` (`enable_gitea`) |
-| `modules/prometheus/` | optional Prometheus `Deployment` (`enable_prometheus`) |
+| `modules/postgresql/` | single-instance Postgres `StatefulSet` |
+| `modules/redis/` | Redis `StatefulSet` — instantiated twice (queue broker + cache) |
+| `modules/netbox/` | NetBox server + rq-worker `StatefulSet`, housekeeping `CronJob`, `Service`, optional TLS `Ingress` |
+| `modules/gitea/` | optional Gitea `StatefulSet` (`enable_gitea`) |
+| `modules/prometheus/` | optional Prometheus `StatefulSet` (`enable_prometheus`) |
 
 The root composes: `netbox` + one `postgresql` + two `redis` instances always;
 `gitea` (+ its own `postgresql`) and `prometheus` behind feature flags.
@@ -157,21 +157,23 @@ Every workload carries the recommended labels:
 
 ## Known issues / gotchas
 
-- Storage is dynamically provisioned by whatever the **default `StorageClass`**
-  is (Docker Desktop: `standard`, `rancher.io/local-path`). No hand-rolled PVs.
-  That class binds `WaitForFirstConsumer`, so the standalone PVCs set
-  `wait_until_bound = false` — otherwise `apply` deadlocks (PVC won't bind until
-  its pod schedules; the pod isn't created until the PVC resource "completes").
-- On first `apply` the `netbox` pod restarts a few times (~2–4): the startup
-  probe is impatient during v4 migrations, and `netbox-worker` crashes with
-  `relation "core_job" does not exist` until the main container finishes
-  migrating. It converges on its own — the deployment goes 2/2 in ~3 min.
-- The `netbox` Deployment has a **10-minute** create timeout (first-run
+- Every stateful workload is a `StatefulSet` and gets its storage from a
+  `volume_claim_template` — there are **no standalone `kubernetes_persistent_
+  volume_claim_v1` resources**. This is deliberate: the default `StorageClass`
+  (`rancher.io/local-path`) binds `WaitForFirstConsumer`, and a standalone PVC
+  resource with the provider's `wait_until_bound = true` default deadlocks
+  against pod creation (and leaves orphaned PVCs if you kill the hung apply).
+  A `volume_claim_template` is owned by the StatefulSet, so neither happens.
+- Storage is dynamically provisioned by the **default `StorageClass`** (Docker
+  Desktop: `standard`). No hand-rolled PVs.
+- On the *first* `apply` into an empty database the `netbox` pod restarts a few
+  times (~2–4): the startup probe is impatient during v4 migrations and
+  `netbox-worker` crashes with `relation "core_job" does not exist` until they
+  finish. It converges on its own (~3 min). Subsequent applies come up `2/2`
+  with 0 restarts.
+- The `netbox` StatefulSet has a **10-minute** create timeout (first-run
   migrations + search reindex on v4).
-- If an `apply` is interrupted, PVCs it created may be left **not tracked in
-  state** ("... already exists" on the next apply). `kubectl delete pvc` the
-  orphans (they're `Pending`/empty) and re-apply.
-- **Apply-tested once** (core stack: netbox v4.6.9 + PG18 + redis 8.8, on Docker
+- **Apply-tested** (core stack: netbox v4.6.9 + PG18 + redis 8.8, on Docker
   Desktop, 2026-08-30): comes up healthy, `plan` clean afterwards. The
   `securityContext` is deliberately conservative (`seccompProfile:
   RuntimeDefault`, `allowPrivilegeEscalation: false`, `drop: ["ALL"]` on
@@ -185,7 +187,9 @@ Every workload carries the recommended labels:
 
 1. Create `modules/<name>/` with `main.tf`, `variables.tf`, `outputs.tf`,
    `versions.tf`, `README.md`. Take a required `namespace` variable and set
-   `metadata { namespace = var.namespace }` on every namespaced resource.
+   `metadata { namespace = var.namespace }` on every namespaced resource. If it
+   has persistent storage, make the workload a `StatefulSet` with a
+   `volume_claim_template` — do not add a standalone PVC resource.
 2. Add a `module` block in `main.tf` passing `namespace = local.namespace`; gate
    it behind an `enable_<name>` bool if it is optional.
 3. Run `scripts/check.sh --fix`, then add `tests/<name>.tftest.hcl` with
@@ -217,14 +221,13 @@ This repo is mid-refactor. Target state, not yet fully realized:
    **Done** — one file per module + `tests/root.tftest.hcl` (feature-flag
    plumbing), 12 `run` blocks, all `command = plan`. Run via `scripts/check.sh`
    or `terraform test`.
-6. ~~**Version bumps** — one component per commit.~~ **Done (plan-verified,
-   not apply-verified):** busybox 1.38.0, Redis 8.8, PostgreSQL 18 (PGDATA
-   pinned), Prometheus v3.14.0 (template trimmed), Gitea 1.27.2, NetBox v4.6.9
-   (startup probe switched from `unitd` to `granian`). Apply-test the stack
-   before trusting these.
-7. ~~**K8s hardening**~~ **Partly done (plan-verified only):** whole stack now
-   deploys into one namespace (`var.namespace`, default `netbox`); every
-   container has resource requests/limits and a conservative `securityContext`;
-   postgres uses a `volume_claim_template`; the hostPath PV is gone (dynamic
-   provisioning). Still open: `runAsNonRoot` / `readOnlyRootFilesystem` /
-   `fsGroup`, NetworkPolicies, and an actual apply.
+6. ~~**Version bumps** — one component per commit.~~ **Done:** busybox 1.38.0,
+   Redis 8.8, PostgreSQL 18 (PGDATA pinned), Prometheus v3.14.0 (template
+   trimmed), Gitea 1.27.2, NetBox v4.6.9 (startup probe `unitd` -> `granian`).
+   Core stack (netbox/postgres/redis) apply-tested; gitea/prometheus plan-only.
+7. ~~**K8s hardening**~~ **Done (core stack apply-tested):** one namespace
+   (`var.namespace`, default `netbox`); resource requests/limits and a
+   conservative `securityContext` on every container; **every stateful workload
+   is a `StatefulSet` with a `volume_claim_template`** — no standalone PVCs, no
+   hostPath PV. Still open: `runAsNonRoot` / `readOnlyRootFilesystem` /
+   `fsGroup` per image, and NetworkPolicies.
