@@ -2,6 +2,10 @@
 
 provider "kubernetes" {}
 
+variables {
+  namespace = "test-ns"
+}
+
 run "prometheus_wiring" {
   command = plan
 
@@ -32,5 +36,15 @@ run "prometheus_wiring" {
   assert {
     condition     = kubernetes_persistent_volume_claim_v1.prometheus_pvc.spec[0].resources[0].requests.storage == "0.5Gi"
     error_message = "pvc must request the default 0.5Gi"
+  }
+
+  assert {
+    condition     = length([for m in kubernetes_deployment_v1.prometheus.spec[0].template[0].spec[0].container[0].volume_mount : m if m.mount_path == "/prometheus"]) == 1
+    error_message = "the data PVC must be mounted at /prometheus"
+  }
+
+  assert {
+    condition     = kubernetes_ingress_v1.prometheus.spec[0].rule[0].host == "prometheus.example.local"
+    error_message = "ingress host must be var.fqdn"
   }
 }

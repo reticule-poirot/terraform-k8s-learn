@@ -4,6 +4,11 @@ variable "name" {
   default     = "prometheus"
 }
 
+variable "namespace" {
+  type        = string
+  description = "Kubernetes namespace to deploy into"
+}
+
 variable "prometheus_version" {
   type        = string
   description = "prom/prometheus image tag"

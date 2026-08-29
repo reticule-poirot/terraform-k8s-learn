@@ -29,7 +29,7 @@ reproducible results.
 | `.tflint.hcl` | tflint config (recommended preset + a few extras) |
 | `scripts/check.sh` | runs every quality gate via Docker |
 | `tests/*.tftest.hcl` | `terraform test` plan-level assertions (one file per module + root) |
-| `modules/postgresql/` | single-instance Postgres `StatefulSet` + hostPath `PersistentVolume` |
+| `modules/postgresql/` | single-instance Postgres `StatefulSet` with a `volume_claim_template` |
 | `modules/redis/` | Redis `Deployment` — instantiated twice (queue broker + cache) |
 | `modules/netbox/` | NetBox server + rq-worker `Deployment`, housekeeping `CronJob`, `Service`, optional TLS `Ingress` |
 | `modules/gitea/` | optional Gitea `Deployment` (`enable_gitea`) |
@@ -157,21 +157,27 @@ Every workload carries the recommended labels:
 
 ## Known issues / gotchas
 
-- The `postgresql` module uses a **hostPath** `PersistentVolume` — single-node
-  only. Data survives pod restarts, not node changes.
+- Storage is dynamically provisioned by whatever the **default `StorageClass`**
+  is (Docker Desktop: `standard`, `rancher.io/local-path`). No hand-rolled PVs.
 - The `netbox` Deployment has a **10-minute** create timeout (first-run
   migrations + search reindex on v4).
 - Applying the full stack from an empty state is slow and order-sensitive; if an
   apply fails partway, re-run `plan` before the next `apply` to see real drift.
-- `enable_gitea = true` / `enable_prometheus = true` are covered by
-  `terraform test` (plan only) but have not been apply-tested on a cluster.
+- **Nothing here has been apply-tested since the modernization.** `terraform
+  test` is plan-only. The `securityContext` is deliberately conservative
+  (`seccompProfile: RuntimeDefault`, `allowPrivilegeEscalation: false`, and
+  `drop: ["ALL"]` on the images known to run non-root — not postgres/gitea).
+  `runAsNonRoot`, `readOnlyRootFilesystem` and `fsGroup` are **not** set — add
+  them per image once you can apply-test. Resource requests/limits are guesses.
+- `enable_gitea = true` / `enable_prometheus = true` add more untested surface.
 
 ## Adding a component module
 
 1. Create `modules/<name>/` with `main.tf`, `variables.tf`, `outputs.tf`,
-   `versions.tf`, `README.md`.
-2. Add a `module` block in `main.tf`; gate it behind an `enable_<name>` bool if
-   it is optional.
+   `versions.tf`, `README.md`. Take a required `namespace` variable and set
+   `metadata { namespace = var.namespace }` on every namespaced resource.
+2. Add a `module` block in `main.tf` passing `namespace = local.namespace`; gate
+   it behind an `enable_<name>` bool if it is optional.
 3. Run `scripts/check.sh --fix`, then add `tests/<name>.tftest.hcl` with
    `command = plan` assertions.
 
@@ -206,5 +212,9 @@ This repo is mid-refactor. Target state, not yet fully realized:
    pinned), Prometheus v3.14.0 (template trimmed), Gitea 1.27.2, NetBox v4.6.9
    (startup probe switched from `unitd` to `granian`). Apply-test the stack
    before trusting these.
-7. **K8s hardening** — per-stack namespaces, resource requests/limits,
-   `securityContext`, StatefulSet `volume_claim_template`, drop the hostPath PV.
+7. ~~**K8s hardening**~~ **Partly done (plan-verified only):** whole stack now
+   deploys into one namespace (`var.namespace`, default `netbox`); every
+   container has resource requests/limits and a conservative `securityContext`;
+   postgres uses a `volume_claim_template`; the hostPath PV is gone (dynamic
+   provisioning). Still open: `runAsNonRoot` / `readOnlyRootFilesystem` /
+   `fsGroup`, NetworkPolicies, and an actual apply.

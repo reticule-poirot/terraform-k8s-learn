@@ -10,8 +10,9 @@ locals {
 
 resource "kubernetes_config_map_v1" "postgresql_env" {
   metadata {
-    name   = "${var.name}-env"
-    labels = local.labels
+    name      = "${var.name}-env"
+    namespace = var.namespace
+    labels    = local.labels
   }
   data = {
     POSTGRES_PASSWORD_FILE = "/run/secrets/postgres_password"
@@ -26,8 +27,9 @@ resource "kubernetes_config_map_v1" "postgresql_env" {
 
 resource "kubernetes_secret_v1" "postgresql_secret" {
   metadata {
-    name   = "${var.name}-secret"
-    labels = local.labels
+    name      = "${var.name}-secret"
+    namespace = var.namespace
+    labels    = local.labels
   }
   data = {
     postgres_user : var.psql_user
@@ -36,47 +38,11 @@ resource "kubernetes_secret_v1" "postgresql_secret" {
   }
 }
 
-resource "kubernetes_persistent_volume_v1" "postgresql_pv" {
-  metadata {
-    name   = "${var.name}-pv"
-    labels = local.labels
-  }
-  spec {
-    access_modes = ["ReadWriteOnce"]
-    capacity = {
-      storage = var.psql_data_size
-    }
-    storage_class_name = "hostpath"
-    persistent_volume_source {
-      host_path {
-        path = "/mnt/${var.name}_psql_data"
-      }
-    }
-  }
-}
-
-resource "kubernetes_persistent_volume_claim_v1" "postgresql_pvc" {
-  metadata {
-    name   = "${var.name}-pvc"
-    labels = local.labels
-  }
-  spec {
-    access_modes = ["ReadWriteOnce"]
-    resources {
-      requests = {
-        storage = var.psql_data_size
-      }
-    }
-    storage_class_name = "hostpath"
-    selector {
-      match_labels = local.labels
-    }
-  }
-}
-
 resource "kubernetes_service_v1" "postgresql_service" {
   metadata {
-    name = var.name
+    name      = var.name
+    namespace = var.namespace
+    labels    = local.labels
   }
   spec {
     selector = {
@@ -90,7 +56,9 @@ resource "kubernetes_service_v1" "postgresql_service" {
 
 resource "kubernetes_stateful_set_v1" "postgresql" {
   metadata {
-    name = var.name
+    name      = var.name
+    namespace = var.namespace
+    labels    = local.labels
   }
   spec {
     selector {
@@ -106,12 +74,29 @@ resource "kubernetes_stateful_set_v1" "postgresql" {
         }
       }
       spec {
+        security_context {
+          seccomp_profile {
+            type = "RuntimeDefault"
+          }
+        }
         container {
           image             = "postgres:${var.psql_version}"
           image_pull_policy = "IfNotPresent"
           name              = var.name
           port {
             container_port = var.psql_port
+          }
+          security_context {
+            allow_privilege_escalation = false
+          }
+          resources {
+            requests = {
+              cpu    = "100m"
+              memory = "128Mi"
+            }
+            limits = {
+              memory = "512Mi"
+            }
           }
           startup_probe {
             exec {
@@ -151,10 +136,19 @@ resource "kubernetes_stateful_set_v1" "postgresql" {
             }
           }
         }
-        volume {
-          name = "postgresql-data"
-          persistent_volume_claim {
-            claim_name = kubernetes_persistent_volume_claim_v1.postgresql_pvc.metadata[0].name
+      }
+    }
+    volume_claim_template {
+      metadata {
+        name      = "postgresql-data"
+        namespace = var.namespace
+        labels    = local.labels
+      }
+      spec {
+        access_modes = ["ReadWriteOnce"]
+        resources {
+          requests = {
+            storage = var.psql_data_size
           }
         }
       }
@@ -163,8 +157,7 @@ resource "kubernetes_stateful_set_v1" "postgresql" {
   depends_on = [
     kubernetes_config_map_v1.postgresql_env,
     kubernetes_secret_v1.postgresql_secret,
-    kubernetes_persistent_volume_claim_v1.postgresql_pvc,
-    kubernetes_service_v1.postgresql_service
+    kubernetes_service_v1.postgresql_service,
   ]
   timeouts {
     create = "2m"

@@ -2,6 +2,10 @@
 
 provider "kubernetes" {}
 
+variables {
+  namespace = "test-ns"
+}
+
 run "redis_defaults" {
   command = plan
 
@@ -34,6 +38,16 @@ run "redis_defaults" {
   assert {
     condition     = kubernetes_persistent_volume_claim_v1.redis_pvc.spec[0].resources[0].requests.storage == "1Gi"
     error_message = "pvc must request the default 1Gi"
+  }
+
+  assert {
+    condition     = kubernetes_deployment_v1.redis_deployment.metadata[0].namespace == "test-ns"
+    error_message = "resources must land in var.namespace"
+  }
+
+  assert {
+    condition     = kubernetes_deployment_v1.redis_deployment.spec[0].template[0].spec[0].container[0].security_context[0].allow_privilege_escalation == false
+    error_message = "container must set allowPrivilegeEscalation = false"
   }
 }
 

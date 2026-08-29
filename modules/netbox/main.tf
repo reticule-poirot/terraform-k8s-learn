@@ -12,8 +12,9 @@ locals {
 
 resource "kubernetes_config_map_v1" "netbox_env" {
   metadata {
-    name   = "${var.name}-env"
-    labels = local.labels
+    name      = "${var.name}-env"
+    namespace = var.namespace
+    labels    = local.labels
   }
   data = {
     ALLOWED_HOSTS    = join(" ", local.allowed_hosts)
@@ -33,8 +34,9 @@ resource "kubernetes_config_map_v1" "netbox_env" {
 resource "kubernetes_secret_v1" "netbox_tls" {
   count = var.use_ingress && var.tls_cert != null && var.tls_key != null ? 1 : 0
   metadata {
-    name   = "${var.name}-tls"
-    labels = local.labels
+    name      = "${var.name}-tls"
+    namespace = var.namespace
+    labels    = local.labels
   }
   type = "tls"
   data = {
@@ -45,8 +47,9 @@ resource "kubernetes_secret_v1" "netbox_tls" {
 
 resource "kubernetes_secret_v1" "netbox_secret" {
   metadata {
-    name   = "${var.name}-secret"
-    labels = local.labels
+    name      = "${var.name}-secret"
+    namespace = var.namespace
+    labels    = local.labels
   }
   data = {
     db_password : var.netbox_db_password
@@ -59,8 +62,9 @@ resource "kubernetes_secret_v1" "netbox_secret" {
 resource "kubernetes_persistent_volume_claim_v1" "netbox_pvc" {
   for_each = toset(local.netbox_volumes)
   metadata {
-    name   = "${var.name}-${each.value}-pvc"
-    labels = local.labels
+    name      = "${var.name}-${each.value}-pvc"
+    namespace = var.namespace
+    labels    = local.labels
   }
   spec {
     access_modes = ["ReadWriteOnce"]
@@ -74,8 +78,9 @@ resource "kubernetes_persistent_volume_claim_v1" "netbox_pvc" {
 
 resource "kubernetes_service_v1" "netbox_service" {
   metadata {
-    name   = var.name
-    labels = local.labels
+    name      = var.name
+    namespace = var.namespace
+    labels    = local.labels
   }
   spec {
     selector = {
@@ -90,8 +95,9 @@ resource "kubernetes_service_v1" "netbox_service" {
 resource "kubernetes_ingress_v1" "netbox" {
   count = var.use_ingress && var.tls_cert != null && var.tls_key != null ? 1 : 0
   metadata {
-    name   = "${var.name}-ingres"
-    labels = local.labels
+    name      = "${var.name}-ingres"
+    namespace = var.namespace
+    labels    = local.labels
   }
   spec {
     tls {
@@ -123,8 +129,9 @@ resource "kubernetes_ingress_v1" "netbox" {
 
 resource "kubernetes_deployment_v1" "netbox" {
   metadata {
-    name   = var.name
-    labels = local.labels
+    name      = var.name
+    namespace = var.namespace
+    labels    = local.labels
   }
   spec {
     selector {
@@ -137,11 +144,31 @@ resource "kubernetes_deployment_v1" "netbox" {
         labels = local.labels
       }
       spec {
+        security_context {
+          seccomp_profile {
+            type = "RuntimeDefault"
+          }
+        }
         init_container {
           name              = "${var.name}-init"
           image_pull_policy = "IfNotPresent"
           image             = "busybox:${var.busybox_version}"
           command           = ["/bin/sh", "-c", "sleep 10"]
+          security_context {
+            allow_privilege_escalation = false
+            capabilities {
+              drop = ["ALL"]
+            }
+          }
+          resources {
+            requests = {
+              cpu    = "10m"
+              memory = "16Mi"
+            }
+            limits = {
+              memory = "32Mi"
+            }
+          }
         }
         container {
           image             = "netboxcommunity/netbox:${var.netbox_version}"
@@ -149,6 +176,21 @@ resource "kubernetes_deployment_v1" "netbox" {
           name              = var.name
           port {
             container_port = 8080
+          }
+          security_context {
+            allow_privilege_escalation = false
+            capabilities {
+              drop = ["ALL"]
+            }
+          }
+          resources {
+            requests = {
+              cpu    = "250m"
+              memory = "512Mi"
+            }
+            limits = {
+              memory = "1Gi"
+            }
           }
           startup_probe {
             exec {
@@ -185,6 +227,21 @@ resource "kubernetes_deployment_v1" "netbox" {
           image_pull_policy = "IfNotPresent"
           name              = "${var.name}-worker"
           command           = ["/bin/sh", "-c", "/opt/netbox/venv/bin/python /opt/netbox/netbox/manage.py rqworker"]
+          security_context {
+            allow_privilege_escalation = false
+            capabilities {
+              drop = ["ALL"]
+            }
+          }
+          resources {
+            requests = {
+              cpu    = "100m"
+              memory = "256Mi"
+            }
+            limits = {
+              memory = "512Mi"
+            }
+          }
           liveness_probe {
             exec {
               command = ["/bin/sh", "-c", "ps -aux | grep -v grep | grep -q rqworker || exit 1"]
@@ -252,8 +309,9 @@ resource "kubernetes_deployment_v1" "netbox" {
 
 resource "kubernetes_cron_job_v1" "netbox_cron" {
   metadata {
-    name   = "${var.name}-housekeeper"
-    labels = local.labels
+    name      = "${var.name}-housekeeper"
+    namespace = var.namespace
+    labels    = local.labels
   }
   spec {
     schedule = "0 1 * * *"
@@ -267,11 +325,31 @@ resource "kubernetes_cron_job_v1" "netbox_cron" {
             name = "${var.name}-housekeeper"
           }
           spec {
+            security_context {
+              seccomp_profile {
+                type = "RuntimeDefault"
+              }
+            }
             container {
               image             = "netboxcommunity/netbox:${var.netbox_version}"
               image_pull_policy = "IfNotPresent"
               name              = "${var.name}-housekeeper"
               command           = ["/bin/sh", "-c", "/opt/netbox/venv/bin/python /opt/netbox/netbox/manage.py housekeeping"]
+              security_context {
+                allow_privilege_escalation = false
+                capabilities {
+                  drop = ["ALL"]
+                }
+              }
+              resources {
+                requests = {
+                  cpu    = "100m"
+                  memory = "256Mi"
+                }
+                limits = {
+                  memory = "512Mi"
+                }
+              }
               env_from {
                 config_map_ref {
                   name = kubernetes_config_map_v1.netbox_env.metadata[0].name

@@ -3,6 +3,7 @@
 provider "kubernetes" {}
 
 variables {
+  namespace            = "test-ns"
   netbox_version       = "v4.1.7"
   busybox_version      = "1.37.0"
   netbox_db_password   = "test-password"
@@ -59,6 +60,16 @@ run "netbox_defaults" {
   assert {
     condition     = length(kubernetes_secret_v1.netbox_tls) == 0
     error_message = "no TLS secret without TLS material"
+  }
+
+  assert {
+    condition     = kubernetes_deployment_v1.netbox.metadata[0].namespace == "test-ns"
+    error_message = "deployment must land in var.namespace"
+  }
+
+  assert {
+    condition     = contains(kubernetes_deployment_v1.netbox.spec[0].template[0].spec[0].container[0].security_context[0].capabilities[0].drop, "ALL")
+    error_message = "server container must drop all capabilities"
   }
 }
 

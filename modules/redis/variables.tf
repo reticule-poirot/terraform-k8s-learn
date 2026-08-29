@@ -3,6 +3,11 @@ variable "redis_version" {
   description = "redis image tag"
 }
 
+variable "namespace" {
+  type        = string
+  description = "Kubernetes namespace to deploy into"
+}
+
 variable "redis_port" {
   type        = number
   description = "Redis port"

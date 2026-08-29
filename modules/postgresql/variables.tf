@@ -3,6 +3,11 @@ variable "name" {
   description = "Postgresql pod name"
 }
 
+variable "namespace" {
+  type        = string
+  description = "Kubernetes namespace to deploy into"
+}
+
 variable "psql_version" {
   type        = string
   description = "postgres image tag"

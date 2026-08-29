@@ -31,6 +31,7 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_command"></a> [command](#input\_command) | Redis container entry point | `list(string)` | n/a | yes |
 | <a name="input_name"></a> [name](#input\_name) | Redis pod name | `string` | n/a | yes |
+| <a name="input_namespace"></a> [namespace](#input\_namespace) | Kubernetes namespace to deploy into | `string` | n/a | yes |
 | <a name="input_redis_data_size"></a> [redis\_data\_size](#input\_redis\_data\_size) | Redis data volume size | `string` | `"1Gi"` | no |
 | <a name="input_redis_password"></a> [redis\_password](#input\_redis\_password) | Redis db password | `string` | n/a | yes |
 | <a name="input_redis_port"></a> [redis\_port](#input\_redis\_port) | Redis port | `number` | `6379` | no |

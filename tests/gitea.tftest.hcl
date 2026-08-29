@@ -2,6 +2,10 @@
 
 provider "kubernetes" {}
 
+variables {
+  namespace = "test-ns"
+}
+
 run "gitea_wiring" {
   command = plan
 
@@ -43,6 +47,16 @@ run "gitea_wiring" {
   assert {
     condition     = length(kubernetes_persistent_volume_claim_v1.gitea_pvc) == 2
     error_message = "module must create data and config PVCs"
+  }
+
+  assert {
+    condition     = alltrue([for m in kubernetes_deployment_v1.gitea.spec[0].template[0].spec[0].container[0].volume_mount : startswith(m.mount_path, "/")])
+    error_message = "volume mount paths must be absolute"
+  }
+
+  assert {
+    condition     = kubernetes_deployment_v1.gitea.metadata[0].namespace == "test-ns"
+    error_message = "deployment must land in var.namespace"
   }
 }
 

@@ -2,6 +2,10 @@
 
 provider "kubernetes" {}
 
+variables {
+  namespace = "test-ns"
+}
+
 run "postgresql_wiring" {
   command = plan
 
@@ -11,14 +15,14 @@ run "postgresql_wiring" {
 
   variables {
     name          = "postgresql-netbox"
-    psql_version  = "15-alpine"
+    psql_version  = "18-alpine"
     psql_user     = "netbox"
     psql_password = "test-password"
     psql_db       = "netbox"
   }
 
   assert {
-    condition     = kubernetes_stateful_set_v1.postgresql.spec[0].template[0].spec[0].container[0].image == "postgres:15-alpine"
+    condition     = kubernetes_stateful_set_v1.postgresql.spec[0].template[0].spec[0].container[0].image == "postgres:18-alpine"
     error_message = "image must be postgres:<psql_version>"
   }
 
@@ -33,13 +37,18 @@ run "postgresql_wiring" {
   }
 
   assert {
-    condition     = kubernetes_persistent_volume_v1.postgresql_pv.spec[0].persistent_volume_source[0].host_path[0].path == "/mnt/postgresql-netbox_psql_data"
-    error_message = "hostPath must be derived from var.name"
+    condition     = kubernetes_stateful_set_v1.postgresql.metadata[0].namespace == "test-ns"
+    error_message = "StatefulSet must land in var.namespace"
   }
 
   assert {
-    condition     = kubernetes_persistent_volume_v1.postgresql_pv.spec[0].storage_class_name == "hostpath"
-    error_message = "PV must use the hostpath storage class"
+    condition     = kubernetes_stateful_set_v1.postgresql.spec[0].volume_claim_template[0].metadata[0].name == "postgresql-data"
+    error_message = "storage must come from a volume_claim_template named postgresql-data"
+  }
+
+  assert {
+    condition     = kubernetes_stateful_set_v1.postgresql.spec[0].volume_claim_template[0].spec[0].resources[0].requests.storage == "1Gi"
+    error_message = "volume_claim_template must request the default 1Gi"
   }
 
   assert {
@@ -62,7 +71,7 @@ run "postgresql_custom_size" {
 
   variables {
     name           = "postgresql-gitea"
-    psql_version   = "16-alpine"
+    psql_version   = "18-alpine"
     psql_user      = "gitea"
     psql_password  = "test-password"
     psql_db        = "gitea"
@@ -71,17 +80,12 @@ run "postgresql_custom_size" {
   }
 
   assert {
-    condition     = kubernetes_stateful_set_v1.postgresql.spec[0].template[0].spec[0].container[0].image == "postgres:16-alpine"
-    error_message = "image tag must follow psql_version"
-  }
-
-  assert {
     condition     = kubernetes_service_v1.postgresql_service.spec[0].port[0].port == 5433
     error_message = "service port must follow psql_port"
   }
 
   assert {
-    condition     = kubernetes_persistent_volume_claim_v1.postgresql_pvc.spec[0].resources[0].requests.storage == "5Gi"
-    error_message = "pvc request must follow psql_data_size"
+    condition     = kubernetes_stateful_set_v1.postgresql.spec[0].volume_claim_template[0].spec[0].resources[0].requests.storage == "5Gi"
+    error_message = "volume_claim_template request must follow psql_data_size"
   }
 }

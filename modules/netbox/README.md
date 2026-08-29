@@ -37,6 +37,7 @@ No modules.
 | <a name="input_fqdn"></a> [fqdn](#input\_fqdn) | Netbox fqdn | `string` | `"netbox.example.local"` | no |
 | <a name="input_metrics_enable"></a> [metrics\_enable](#input\_metrics\_enable) | Prometheus metrics enable | `bool` | `false` | no |
 | <a name="input_name"></a> [name](#input\_name) | Netbox pod name | `string` | `"netbox"` | no |
+| <a name="input_namespace"></a> [namespace](#input\_namespace) | Kubernetes namespace to deploy into | `string` | n/a | yes |
 | <a name="input_netbox_data_size"></a> [netbox\_data\_size](#input\_netbox\_data\_size) | Netbox data volume size | `string` | `"0.5Gi"` | no |
 | <a name="input_netbox_db"></a> [netbox\_db](#input\_netbox\_db) | Netbox database name | `string` | `"netbox"` | no |
 | <a name="input_netbox_db_password"></a> [netbox\_db\_password](#input\_netbox\_db\_password) | Netbox db password | `string` | n/a | yes |

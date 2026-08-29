@@ -4,7 +4,8 @@ locals {
 
 resource "kubernetes_config_map_v1" "gitea_env" {
   metadata {
-    name = "${var.name}-env"
+    name      = "${var.name}-env"
+    namespace = var.namespace
   }
   data = {
     GITEA__database__DB_TYPE = var.gitea_db_type
@@ -16,7 +17,8 @@ resource "kubernetes_config_map_v1" "gitea_env" {
 
 resource "kubernetes_secret_v1" "gitea_secret" {
   metadata {
-    name = "${var.name}-secret"
+    name      = "${var.name}-secret"
+    namespace = var.namespace
   }
   data = {
     GITEA__database__PASSWD = var.gitea_db_password
@@ -26,7 +28,8 @@ resource "kubernetes_secret_v1" "gitea_secret" {
 resource "kubernetes_persistent_volume_claim_v1" "gitea_pvc" {
   for_each = toset(local.gitea_volumes)
   metadata {
-    name = "${var.name}-${each.value}-pvc"
+    name      = "${var.name}-${each.value}-pvc"
+    namespace = var.namespace
   }
   spec {
     access_modes = ["ReadWriteOnce"]
@@ -40,7 +43,8 @@ resource "kubernetes_persistent_volume_claim_v1" "gitea_pvc" {
 
 resource "kubernetes_service_v1" "gitea_service" {
   metadata {
-    name = var.name
+    name      = var.name
+    namespace = var.namespace
   }
   spec {
     selector = {
@@ -60,7 +64,8 @@ resource "kubernetes_service_v1" "gitea_service" {
 
 resource "kubernetes_deployment_v1" "gitea" {
   metadata {
-    name = var.name
+    name      = var.name
+    namespace = var.namespace
   }
   spec {
     selector {
@@ -75,10 +80,27 @@ resource "kubernetes_deployment_v1" "gitea" {
         }
       }
       spec {
+        security_context {
+          seccomp_profile {
+            type = "RuntimeDefault"
+          }
+        }
         container {
           image             = "gitea/gitea:${var.gitea_version}"
           image_pull_policy = "IfNotPresent"
           name              = var.name
+          # The rootful gitea image starts as root and drops to the git user
+          # itself, so no run_as_non_root / capability drop here — harden with
+          # the rootless image if you need that.
+          resources {
+            requests = {
+              cpu    = "100m"
+              memory = "128Mi"
+            }
+            limits = {
+              memory = "512Mi"
+            }
+          }
           port {
             container_port = 3000
             name           = "gitea-web-http"
@@ -96,12 +118,13 @@ resource "kubernetes_deployment_v1" "gitea" {
               name = kubernetes_secret_v1.gitea_secret.metadata[0].name
             }
           }
-          dynamic "volume_mount" {
-            for_each = toset(local.gitea_volumes)
-            content {
-              mount_path = volume_mount.value
-              name       = volume_mount.value
-            }
+          volume_mount {
+            mount_path = "/data"
+            name       = "data"
+          }
+          volume_mount {
+            mount_path = "/etc/gitea"
+            name       = "config"
           }
         }
         dynamic "volume" {
@@ -120,7 +143,7 @@ resource "kubernetes_deployment_v1" "gitea" {
     kubernetes_config_map_v1.gitea_env,
     kubernetes_secret_v1.gitea_secret,
     kubernetes_persistent_volume_claim_v1.gitea_pvc,
-    kubernetes_service_v1.gitea_service
+    kubernetes_service_v1.gitea_service,
   ]
   timeouts {
     create = "2m"

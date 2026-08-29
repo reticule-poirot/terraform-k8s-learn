@@ -4,6 +4,11 @@ variable "name" {
   default     = "gitea"
 }
 
+variable "namespace" {
+  type        = string
+  description = "Kubernetes namespace to deploy into"
+}
+
 variable "gitea_version" {
   type        = string
   description = "gitea/gitea image tag"

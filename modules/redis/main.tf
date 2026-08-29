@@ -9,8 +9,9 @@ locals {
 
 resource "kubernetes_secret_v1" "redis_secret" {
   metadata {
-    name   = "${var.name}-secret"
-    labels = local.labels
+    name      = "${var.name}-secret"
+    namespace = var.namespace
+    labels    = local.labels
   }
   data = {
     redis_password : var.redis_password
@@ -19,8 +20,9 @@ resource "kubernetes_secret_v1" "redis_secret" {
 
 resource "kubernetes_persistent_volume_claim_v1" "redis_pvc" {
   metadata {
-    name   = "${var.name}-pvc"
-    labels = local.labels
+    name      = "${var.name}-pvc"
+    namespace = var.namespace
+    labels    = local.labels
   }
   spec {
     access_modes = ["ReadWriteOnce"]
@@ -34,8 +36,9 @@ resource "kubernetes_persistent_volume_claim_v1" "redis_pvc" {
 
 resource "kubernetes_service_v1" "redis_service" {
   metadata {
-    name   = var.name
-    labels = local.labels
+    name      = var.name
+    namespace = var.namespace
+    labels    = local.labels
   }
   spec {
     selector = {
@@ -49,8 +52,9 @@ resource "kubernetes_service_v1" "redis_service" {
 
 resource "kubernetes_deployment_v1" "redis_deployment" {
   metadata {
-    name   = var.name
-    labels = local.labels
+    name      = var.name
+    namespace = var.namespace
+    labels    = local.labels
   }
   spec {
     selector {
@@ -63,6 +67,11 @@ resource "kubernetes_deployment_v1" "redis_deployment" {
         labels = local.labels
       }
       spec {
+        security_context {
+          seccomp_profile {
+            type = "RuntimeDefault"
+          }
+        }
         container {
           image             = "redis:${var.redis_version}"
           image_pull_policy = "IfNotPresent"
@@ -70,6 +79,21 @@ resource "kubernetes_deployment_v1" "redis_deployment" {
           command           = var.command
           port {
             container_port = var.redis_port
+          }
+          security_context {
+            allow_privilege_escalation = false
+            capabilities {
+              drop = ["ALL"]
+            }
+          }
+          resources {
+            requests = {
+              cpu    = "50m"
+              memory = "64Mi"
+            }
+            limits = {
+              memory = "256Mi"
+            }
           }
           readiness_probe {
             exec {
@@ -111,7 +135,6 @@ resource "kubernetes_deployment_v1" "redis_deployment" {
     kubernetes_secret_v1.redis_secret,
     kubernetes_persistent_volume_claim_v1.redis_pvc,
     kubernetes_service_v1.redis_service,
-    kubernetes_service_v1.redis_service
   ]
   timeouts {
     create = "2m"

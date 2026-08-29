@@ -21,8 +21,6 @@ No modules.
 | Name | Type |
 |------|------|
 | [kubernetes_config_map_v1.postgresql_env](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/config_map_v1) | resource |
-| [kubernetes_persistent_volume_claim_v1.postgresql_pvc](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/persistent_volume_claim_v1) | resource |
-| [kubernetes_persistent_volume_v1.postgresql_pv](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/persistent_volume_v1) | resource |
 | [kubernetes_secret_v1.postgresql_secret](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/secret_v1) | resource |
 | [kubernetes_service_v1.postgresql_service](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/service_v1) | resource |
 | [kubernetes_stateful_set_v1.postgresql](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/stateful_set_v1) | resource |
@@ -32,6 +30,7 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_name"></a> [name](#input\_name) | Postgresql pod name | `string` | n/a | yes |
+| <a name="input_namespace"></a> [namespace](#input\_namespace) | Kubernetes namespace to deploy into | `string` | n/a | yes |
 | <a name="input_psql_data_size"></a> [psql\_data\_size](#input\_psql\_data\_size) | Postgresql data volume size | `string` | `"1Gi"` | no |
 | <a name="input_psql_db"></a> [psql\_db](#input\_psql\_db) | Postgresql database name | `string` | n/a | yes |
 | <a name="input_psql_password"></a> [psql\_password](#input\_psql\_password) | Postgresql user password | `string` | n/a | yes |

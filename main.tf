@@ -3,10 +3,23 @@ locals {
     "/bin/sh", "-c", "redis-server --appendonly yes --requirepass $(cat /run/secrets/redis_password)"
   ]
   redis_cache_command = ["/bin/sh", "-c", "redis-server --requirepass $(cat /run/secrets/redis_password)"]
+
+  namespace = kubernetes_namespace_v1.stack.metadata[0].name
+}
+
+resource "kubernetes_namespace_v1" "stack" {
+  metadata {
+    name = var.namespace
+    labels = {
+      "app.kubernetes.io/part-of"    = "netbox"
+      "app.kubernetes.io/managed-by" = "terraform"
+    }
+  }
 }
 
 module "netbox_postgresql" {
   source        = "./modules/postgresql"
+  namespace     = local.namespace
   name          = "postgresql-netbox"
   psql_version  = local.images.postgres
   psql_user     = module.netbox_netbox.netbox_db_user
@@ -17,6 +30,7 @@ module "netbox_postgresql" {
 module "gitea_postgresql" {
   source        = "./modules/postgresql"
   count         = var.enable_gitea ? 1 : 0
+  namespace     = local.namespace
   name          = "postgresql-gitea"
   psql_version  = local.images.postgres
   psql_user     = var.enable_gitea ? module.netbox_gitea[0].gitea_db_user : ""
@@ -27,6 +41,7 @@ module "gitea_postgresql" {
 module "netbox_redis" {
   source         = "./modules/redis"
   for_each       = toset(["redis", "redis-cache"])
+  namespace      = local.namespace
   name           = each.value
   redis_version  = local.images.redis
   command        = each.value == "redis" ? local.redis_command : local.redis_cache_command
@@ -35,6 +50,7 @@ module "netbox_redis" {
 
 module "netbox_netbox" {
   source               = "./modules/netbox"
+  namespace            = local.namespace
   netbox_version       = local.images.netbox
   busybox_version      = local.images.busybox
   fqdn                 = "netbox.example.local"
@@ -53,6 +69,7 @@ module "netbox_netbox" {
 module "netbox_gitea" {
   source            = "./modules/gitea"
   count             = var.enable_gitea ? 1 : 0
+  namespace         = local.namespace
   gitea_version     = local.images.gitea
   gitea_db_password = var.gitea_db_password
   gitea_db_service  = var.enable_gitea ? module.gitea_postgresql[0].service.service : ""
@@ -61,6 +78,7 @@ module "netbox_gitea" {
 module "netbox_prometheus" {
   source             = "./modules/prometheus"
   count              = var.enable_prometheus ? 1 : 0
+  namespace          = local.namespace
   prometheus_version = local.images.prometheus
   prometheus_config = templatefile("${path.module}/prometheus.yml.tftpl",
     { job_name = module.netbox_netbox.name,

@@ -18,6 +18,12 @@ variable "cluster_ca_certificate" {
   description = "Cluster certificate"
 }
 
+variable "namespace" {
+  type        = string
+  description = "Kubernetes namespace the whole stack is deployed into"
+  default     = "netbox"
+}
+
 variable "netbox_password" {
   type        = string
   description = "Netbox database password"

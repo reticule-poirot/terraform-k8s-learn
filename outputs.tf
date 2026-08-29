@@ -1,3 +1,8 @@
+output "namespace" {
+  description = "Namespace the stack is deployed into"
+  value       = local.namespace
+}
+
 output "netbox_url" {
   description = "URL the NetBox ingress serves"
   value       = "https://${module.netbox_netbox.fqdn}"

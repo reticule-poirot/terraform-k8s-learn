@@ -39,6 +39,7 @@ No modules.
 | <a name="input_gitea_db_user"></a> [gitea\_db\_user](#input\_gitea\_db\_user) | Gitea db user | `string` | `"gitea"` | no |
 | <a name="input_gitea_version"></a> [gitea\_version](#input\_gitea\_version) | gitea/gitea image tag | `string` | n/a | yes |
 | <a name="input_name"></a> [name](#input\_name) | Gitea pod name | `string` | `"gitea"` | no |
+| <a name="input_namespace"></a> [namespace](#input\_namespace) | Kubernetes namespace to deploy into | `string` | n/a | yes |
 
 ## Outputs
 

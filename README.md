@@ -11,7 +11,9 @@ Learn Terraform and Kubernetes basics
 
 ## Providers
 
-No providers.
+| Name | Version |
+|------|---------|
+| <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | 3.2.1 |
 
 ## Modules
 
@@ -26,7 +28,9 @@ No providers.
 
 ## Resources
 
-No resources.
+| Name | Type |
+|------|------|
+| [kubernetes_namespace_v1.stack](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace_v1) | resource |
 
 ## Inputs
 
@@ -39,6 +43,7 @@ No resources.
 | <a name="input_enable_prometheus"></a> [enable\_prometheus](#input\_enable\_prometheus) | Deploy prometheus related resources | `bool` | `false` | no |
 | <a name="input_gitea_db_password"></a> [gitea\_db\_password](#input\_gitea\_db\_password) | Gitea database password | `string` | n/a | yes |
 | <a name="input_host"></a> [host](#input\_host) | Kubernetes cluster | `string` | n/a | yes |
+| <a name="input_namespace"></a> [namespace](#input\_namespace) | Kubernetes namespace the whole stack is deployed into | `string` | `"netbox"` | no |
 | <a name="input_netbox_password"></a> [netbox\_password](#input\_netbox\_password) | Netbox database password | `string` | n/a | yes |
 | <a name="input_netbox_tls_cert"></a> [netbox\_tls\_cert](#input\_netbox\_tls\_cert) | Netbox tls certificate | `string` | n/a | yes |
 | <a name="input_netbox_tls_key"></a> [netbox\_tls\_key](#input\_netbox\_tls\_key) | Netbox tls certificate key | `string` | n/a | yes |
@@ -51,6 +56,7 @@ No resources.
 | Name | Description |
 |------|-------------|
 | <a name="output_gitea_enabled"></a> [gitea\_enabled](#output\_gitea\_enabled) | Whether the Gitea stack is deployed |
+| <a name="output_namespace"></a> [namespace](#output\_namespace) | Namespace the stack is deployed into |
 | <a name="output_netbox_service"></a> [netbox\_service](#output\_netbox\_service) | In-cluster NetBox service name and port |
 | <a name="output_netbox_url"></a> [netbox\_url](#output\_netbox\_url) | URL the NetBox ingress serves |
 | <a name="output_prometheus_enabled"></a> [prometheus\_enabled](#output\_prometheus\_enabled) | Whether the Prometheus stack is deployed |

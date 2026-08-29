@@ -4,6 +4,11 @@ variable "name" {
   default     = "netbox"
 }
 
+variable "namespace" {
+  type        = string
+  description = "Kubernetes namespace to deploy into"
+}
+
 variable "fqdn" {
   type        = string
   description = "Netbox fqdn"
