@@ -10,7 +10,7 @@ locals {
   allowed_hosts = [var.fqdn, var.name]
 }
 
-resource "kubernetes_config_map" "netbox_env" {
+resource "kubernetes_config_map_v1" "netbox_env" {
   metadata {
     name   = "${var.name}-env"
     labels = local.labels
@@ -30,7 +30,7 @@ resource "kubernetes_config_map" "netbox_env" {
   }
 }
 
-resource "kubernetes_secret" "netbox_tls" {
+resource "kubernetes_secret_v1" "netbox_tls" {
   count = var.use_ingress && var.tls_cert != null && var.tls_key != null ? 1 : 0
   metadata {
     name   = "${var.name}-tls"
@@ -43,7 +43,7 @@ resource "kubernetes_secret" "netbox_tls" {
   }
 }
 
-resource "kubernetes_secret" "netbox_secret" {
+resource "kubernetes_secret_v1" "netbox_secret" {
   metadata {
     name   = "${var.name}-secret"
     labels = local.labels
@@ -56,7 +56,7 @@ resource "kubernetes_secret" "netbox_secret" {
   }
 }
 
-resource "kubernetes_persistent_volume_claim" "netbox_pvc" {
+resource "kubernetes_persistent_volume_claim_v1" "netbox_pvc" {
   for_each = toset(local.netbox_volumes)
   metadata {
     name   = "${var.name}-${each.value}-pvc"
@@ -72,7 +72,7 @@ resource "kubernetes_persistent_volume_claim" "netbox_pvc" {
   }
 }
 
-resource "kubernetes_service" "netbox_service" {
+resource "kubernetes_service_v1" "netbox_service" {
   metadata {
     name   = var.name
     labels = local.labels
@@ -95,7 +95,7 @@ resource "kubernetes_ingress_v1" "netbox" {
   }
   spec {
     tls {
-      secret_name = kubernetes_secret.netbox_tls[count.index].metadata[0].name
+      secret_name = kubernetes_secret_v1.netbox_tls[count.index].metadata[0].name
     }
     ingress_class_name = "nginx"
     rule {
@@ -105,7 +105,7 @@ resource "kubernetes_ingress_v1" "netbox" {
           path = "/"
           backend {
             service {
-              name = kubernetes_service.netbox_service.metadata[0].name
+              name = kubernetes_service_v1.netbox_service.metadata[0].name
               port {
                 number = 8080
               }
@@ -116,12 +116,12 @@ resource "kubernetes_ingress_v1" "netbox" {
     }
   }
   depends_on = [
-    kubernetes_secret.netbox_tls,
-    kubernetes_service.netbox_service
+    kubernetes_secret_v1.netbox_tls,
+    kubernetes_service_v1.netbox_service
   ]
 }
 
-resource "kubernetes_deployment" "netbox" {
+resource "kubernetes_deployment_v1" "netbox" {
   metadata {
     name   = var.name
     labels = local.labels
@@ -159,7 +159,7 @@ resource "kubernetes_deployment" "netbox" {
           }
           env_from {
             config_map_ref {
-              name = kubernetes_config_map.netbox_env.metadata[0].name
+              name = kubernetes_config_map_v1.netbox_env.metadata[0].name
             }
           }
           dynamic "volume_mount" {
@@ -192,7 +192,7 @@ resource "kubernetes_deployment" "netbox" {
           }
           env_from {
             config_map_ref {
-              name = kubernetes_config_map.netbox_env.metadata[0].name
+              name = kubernetes_config_map_v1.netbox_env.metadata[0].name
             }
           }
           dynamic "volume_mount" {
@@ -226,7 +226,7 @@ resource "kubernetes_deployment" "netbox" {
           content {
             name = "${volume.value}-secret"
             secret {
-              secret_name = kubernetes_secret.netbox_secret.metadata[0].name
+              secret_name = kubernetes_secret_v1.netbox_secret.metadata[0].name
               items {
                 key  = replace(volume.value, "-", "_")
                 path = replace(volume.value, "-", "_")
@@ -238,10 +238,10 @@ resource "kubernetes_deployment" "netbox" {
     }
   }
   depends_on = [
-    kubernetes_config_map.netbox_env,
-    kubernetes_secret.netbox_secret,
-    kubernetes_persistent_volume_claim.netbox_pvc,
-    kubernetes_service.netbox_service
+    kubernetes_config_map_v1.netbox_env,
+    kubernetes_secret_v1.netbox_secret,
+    kubernetes_persistent_volume_claim_v1.netbox_pvc,
+    kubernetes_service_v1.netbox_service
   ]
   timeouts {
     create = "7m"
@@ -273,7 +273,7 @@ resource "kubernetes_cron_job_v1" "netbox_cron" {
               command           = ["/bin/sh", "-c", "/opt/netbox/venv/bin/python /opt/netbox/netbox/manage.py housekeeping"]
               env_from {
                 config_map_ref {
-                  name = kubernetes_config_map.netbox_env.metadata[0].name
+                  name = kubernetes_config_map_v1.netbox_env.metadata[0].name
                 }
               }
               dynamic "volume_mount" {
@@ -307,7 +307,7 @@ resource "kubernetes_cron_job_v1" "netbox_cron" {
               content {
                 name = "${volume.value}-secret"
                 secret {
-                  secret_name = kubernetes_secret.netbox_secret.metadata[0].name
+                  secret_name = kubernetes_secret_v1.netbox_secret.metadata[0].name
                   items {
                     key  = replace(volume.value, "-", "_")
                     path = replace(volume.value, "-", "_")

@@ -7,7 +7,7 @@ locals {
   }
 }
 
-resource "kubernetes_secret" "redis_secret" {
+resource "kubernetes_secret_v1" "redis_secret" {
   metadata {
     name   = "${var.name}-secret"
     labels = local.labels
@@ -17,7 +17,7 @@ resource "kubernetes_secret" "redis_secret" {
   }
 }
 
-resource "kubernetes_persistent_volume_claim" "redis_pvc" {
+resource "kubernetes_persistent_volume_claim_v1" "redis_pvc" {
   metadata {
     name   = "${var.name}-pvc"
     labels = local.labels
@@ -32,7 +32,7 @@ resource "kubernetes_persistent_volume_claim" "redis_pvc" {
   }
 }
 
-resource "kubernetes_service" "redis_service" {
+resource "kubernetes_service_v1" "redis_service" {
   metadata {
     name   = var.name
     labels = local.labels
@@ -47,7 +47,7 @@ resource "kubernetes_service" "redis_service" {
   }
 }
 
-resource "kubernetes_deployment" "redis_deployment" {
+resource "kubernetes_deployment_v1" "redis_deployment" {
   metadata {
     name   = var.name
     labels = local.labels
@@ -91,13 +91,13 @@ resource "kubernetes_deployment" "redis_deployment" {
         volume {
           name = "redis-data"
           persistent_volume_claim {
-            claim_name = kubernetes_persistent_volume_claim.redis_pvc.metadata[0].name
+            claim_name = kubernetes_persistent_volume_claim_v1.redis_pvc.metadata[0].name
           }
         }
         volume {
           name = "redis-password"
           secret {
-            secret_name = kubernetes_secret.redis_secret.metadata[0].name
+            secret_name = kubernetes_secret_v1.redis_secret.metadata[0].name
             items {
               key  = "redis_password"
               path = "redis_password"
@@ -108,14 +108,13 @@ resource "kubernetes_deployment" "redis_deployment" {
     }
   }
   depends_on = [
-    kubernetes_secret.redis_secret,
-    kubernetes_persistent_volume_claim.redis_pvc,
-    kubernetes_service.redis_service,
-    kubernetes_service.redis_service
+    kubernetes_secret_v1.redis_secret,
+    kubernetes_persistent_volume_claim_v1.redis_pvc,
+    kubernetes_service_v1.redis_service,
+    kubernetes_service_v1.redis_service
   ]
   timeouts {
     create = "2m"
     update = "2m"
   }
 }
-

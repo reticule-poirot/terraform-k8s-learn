@@ -6,7 +6,7 @@ locals {
   }
 }
 
-resource "kubernetes_config_map" "prometheus_config" {
+resource "kubernetes_config_map_v1" "prometheus_config" {
   metadata {
     name = "${var.name}-config"
   }
@@ -15,7 +15,7 @@ resource "kubernetes_config_map" "prometheus_config" {
   }
 }
 
-resource "kubernetes_persistent_volume_claim" "prometheus_pvc" {
+resource "kubernetes_persistent_volume_claim_v1" "prometheus_pvc" {
   metadata {
     name = "${var.name}-pvc"
   }
@@ -29,7 +29,7 @@ resource "kubernetes_persistent_volume_claim" "prometheus_pvc" {
   }
 }
 
-resource "kubernetes_service" "prometheus_service" {
+resource "kubernetes_service_v1" "prometheus_service" {
   metadata {
     name = var.name
   }
@@ -57,7 +57,7 @@ resource "kubernetes_ingress_v1" "netbox" {
           path = "/"
           backend {
             service {
-              name = kubernetes_service.prometheus_service.metadata[0].name
+              name = kubernetes_service_v1.prometheus_service.metadata[0].name
               port {
                 number = 9090
               }
@@ -68,11 +68,11 @@ resource "kubernetes_ingress_v1" "netbox" {
     }
   }
   depends_on = [
-    kubernetes_service.prometheus_service
+    kubernetes_service_v1.prometheus_service
   ]
 }
 
-resource "kubernetes_deployment" "prometheus" {
+resource "kubernetes_deployment_v1" "prometheus" {
   metadata {
     name   = var.name
     labels = local.labels
@@ -103,16 +103,16 @@ resource "kubernetes_deployment" "prometheus" {
         volume {
           name = "${var.name}-config"
           config_map {
-            name = kubernetes_config_map.prometheus_config.metadata[0].name
+            name = kubernetes_config_map_v1.prometheus_config.metadata[0].name
           }
         }
       }
     }
   }
   depends_on = [
-    kubernetes_service.prometheus_service,
-    kubernetes_config_map.prometheus_config,
-    kubernetes_persistent_volume_claim.prometheus_pvc
+    kubernetes_service_v1.prometheus_service,
+    kubernetes_config_map_v1.prometheus_config,
+    kubernetes_persistent_volume_claim_v1.prometheus_pvc
   ]
   timeouts {
     create = "2m"

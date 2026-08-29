@@ -8,7 +8,7 @@ locals {
   }
 }
 
-resource "kubernetes_config_map" "postgresql_env" {
+resource "kubernetes_config_map_v1" "postgresql_env" {
   metadata {
     name   = "${var.name}-env"
     labels = local.labels
@@ -20,7 +20,7 @@ resource "kubernetes_config_map" "postgresql_env" {
   }
 }
 
-resource "kubernetes_secret" "postgresql_secret" {
+resource "kubernetes_secret_v1" "postgresql_secret" {
   metadata {
     name   = "${var.name}-secret"
     labels = local.labels
@@ -32,7 +32,7 @@ resource "kubernetes_secret" "postgresql_secret" {
   }
 }
 
-resource "kubernetes_persistent_volume" "postgresql_pv" {
+resource "kubernetes_persistent_volume_v1" "postgresql_pv" {
   metadata {
     name   = "${var.name}-pv"
     labels = local.labels
@@ -51,7 +51,7 @@ resource "kubernetes_persistent_volume" "postgresql_pv" {
   }
 }
 
-resource "kubernetes_persistent_volume_claim" "postgresql_pvc" {
+resource "kubernetes_persistent_volume_claim_v1" "postgresql_pvc" {
   metadata {
     name   = "${var.name}-pvc"
     labels = local.labels
@@ -70,7 +70,7 @@ resource "kubernetes_persistent_volume_claim" "postgresql_pvc" {
   }
 }
 
-resource "kubernetes_service" "postgresql_service" {
+resource "kubernetes_service_v1" "postgresql_service" {
   metadata {
     name = var.name
   }
@@ -84,7 +84,7 @@ resource "kubernetes_service" "postgresql_service" {
   }
 }
 
-resource "kubernetes_stateful_set" "postgresql" {
+resource "kubernetes_stateful_set_v1" "postgresql" {
   metadata {
     name = var.name
   }
@@ -94,7 +94,7 @@ resource "kubernetes_stateful_set" "postgresql" {
         name = var.name
       }
     }
-    service_name = kubernetes_service.postgresql_service.metadata[0].name
+    service_name = kubernetes_service_v1.postgresql_service.metadata[0].name
     template {
       metadata {
         labels = {
@@ -118,7 +118,7 @@ resource "kubernetes_stateful_set" "postgresql" {
           }
           env_from {
             config_map_ref {
-              name = kubernetes_config_map.postgresql_env.metadata[0].name
+              name = kubernetes_config_map_v1.postgresql_env.metadata[0].name
             }
           }
           dynamic "volume_mount" {
@@ -139,7 +139,7 @@ resource "kubernetes_stateful_set" "postgresql" {
           content {
             name = volume.value
             secret {
-              secret_name = kubernetes_secret.postgresql_secret.metadata[0].name
+              secret_name = kubernetes_secret_v1.postgresql_secret.metadata[0].name
               items {
                 key  = replace(volume.value, "-", "_")
                 path = replace(volume.value, "-", "_")
@@ -150,17 +150,17 @@ resource "kubernetes_stateful_set" "postgresql" {
         volume {
           name = "postgresql-data"
           persistent_volume_claim {
-            claim_name = kubernetes_persistent_volume_claim.postgresql_pvc.metadata[0].name
+            claim_name = kubernetes_persistent_volume_claim_v1.postgresql_pvc.metadata[0].name
           }
         }
       }
     }
   }
   depends_on = [
-    kubernetes_config_map.postgresql_env,
-    kubernetes_secret.postgresql_secret,
-    kubernetes_persistent_volume_claim.postgresql_pvc,
-    kubernetes_service.postgresql_service
+    kubernetes_config_map_v1.postgresql_env,
+    kubernetes_secret_v1.postgresql_secret,
+    kubernetes_persistent_volume_claim_v1.postgresql_pvc,
+    kubernetes_service_v1.postgresql_service
   ]
   timeouts {
     create = "2m"

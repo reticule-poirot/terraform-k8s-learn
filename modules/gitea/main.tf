@@ -2,7 +2,7 @@ locals {
   gitea_volumes = ["data", "config"]
 }
 
-resource "kubernetes_config_map" "gitea_env" {
+resource "kubernetes_config_map_v1" "gitea_env" {
   metadata {
     name = "${var.name}-env"
   }
@@ -14,7 +14,7 @@ resource "kubernetes_config_map" "gitea_env" {
   }
 }
 
-resource "kubernetes_secret" "gitea_secret" {
+resource "kubernetes_secret_v1" "gitea_secret" {
   metadata {
     name = "${var.name}-secret"
   }
@@ -23,7 +23,7 @@ resource "kubernetes_secret" "gitea_secret" {
   }
 }
 
-resource "kubernetes_persistent_volume_claim" "gitea_pvc" {
+resource "kubernetes_persistent_volume_claim_v1" "gitea_pvc" {
   for_each = toset(local.gitea_volumes)
   metadata {
     name = "${var.name}-${each.value}-pvc"
@@ -38,7 +38,7 @@ resource "kubernetes_persistent_volume_claim" "gitea_pvc" {
   }
 }
 
-resource "kubernetes_service" "gitea_service" {
+resource "kubernetes_service_v1" "gitea_service" {
   metadata {
     name = var.name
   }
@@ -58,7 +58,7 @@ resource "kubernetes_service" "gitea_service" {
   }
 }
 
-resource "kubernetes_deployment" "gitea" {
+resource "kubernetes_deployment_v1" "gitea" {
   metadata {
     name = var.name
   }
@@ -88,12 +88,12 @@ resource "kubernetes_deployment" "gitea" {
           }
           env_from {
             config_map_ref {
-              name = kubernetes_config_map.gitea_env.metadata[0].name
+              name = kubernetes_config_map_v1.gitea_env.metadata[0].name
             }
           }
           env_from {
             secret_ref {
-              name = kubernetes_secret.gitea_secret.metadata[0].name
+              name = kubernetes_secret_v1.gitea_secret.metadata[0].name
             }
           }
           dynamic "volume_mount" {
@@ -117,10 +117,10 @@ resource "kubernetes_deployment" "gitea" {
     }
   }
   depends_on = [
-    kubernetes_config_map.gitea_env,
-    kubernetes_secret.gitea_secret,
-    kubernetes_persistent_volume_claim.gitea_pvc,
-    kubernetes_service.gitea_service
+    kubernetes_config_map_v1.gitea_env,
+    kubernetes_secret_v1.gitea_secret,
+    kubernetes_persistent_volume_claim_v1.gitea_pvc,
+    kubernetes_service_v1.gitea_service
   ]
   timeouts {
     create = "2m"
