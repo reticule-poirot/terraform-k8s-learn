@@ -4,7 +4,7 @@ locals {
   # version (e.g. postgres 15 -> 18) means reading the upstream upgrade notes
   # first and recording what you checked in the PR — see AGENTS.md.
   images = {
-    postgres   = "15-alpine"  # postgres:<tag>                — >= 18 moves PGDATA
+    postgres   = "18-alpine"  # postgres:<tag>                — PGDATA pinned in the module (see postgresql/main.tf)
     redis      = "8.8-alpine" # redis:<tag>                  — 8.x wire-compatible; AOF/RDB forward-compatible
     netbox     = "v3.7.2"     # netboxcommunity/netbox:<tag>  — 4.x = Django 5 / GraphQL rewrite
     gitea      = "1.20.4"     # gitea/gitea:<tag>

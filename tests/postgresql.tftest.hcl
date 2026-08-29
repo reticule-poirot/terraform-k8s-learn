@@ -46,6 +46,11 @@ run "postgresql_wiring" {
     condition     = kubernetes_config_map_v1.postgresql_env.data["POSTGRES_PASSWORD_FILE"] == "/run/secrets/postgres_password"
     error_message = "env config map must point POSTGRES_PASSWORD_FILE at the mounted secret"
   }
+
+  assert {
+    condition     = startswith(kubernetes_config_map_v1.postgresql_env.data["PGDATA"], "/var/lib/postgresql/data/")
+    error_message = "PGDATA must be pinned under the mounted volume (postgres >= 18 relocates it otherwise)"
+  }
 }
 
 run "postgresql_custom_size" {

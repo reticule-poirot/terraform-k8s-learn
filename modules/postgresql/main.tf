@@ -17,6 +17,10 @@ resource "kubernetes_config_map_v1" "postgresql_env" {
     POSTGRES_PASSWORD_FILE = "/run/secrets/postgres_password"
     POSTGRES_USER_FILE     = "/run/secrets/postgres_user"
     POSTGRES_DB_FILE       = "/run/secrets/postgres_db"
+    # Pin PGDATA to a subdirectory of the mounted volume. postgres >= 18 images
+    # otherwise default PGDATA to a version-specific path (/var/lib/postgresql/18/docker)
+    # outside the mount, and move VOLUME up to /var/lib/postgresql.
+    PGDATA = "/var/lib/postgresql/data/pgdata"
   }
 }
 
