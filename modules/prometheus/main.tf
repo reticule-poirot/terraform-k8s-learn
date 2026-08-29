@@ -17,6 +17,9 @@ resource "kubernetes_config_map_v1" "prometheus_config" {
 }
 
 resource "kubernetes_persistent_volume_claim_v1" "prometheus_pvc" {
+  # Default StorageClass is WaitForFirstConsumer — bind happens when the pod
+  # schedules, so don't block apply on Bound.
+  wait_until_bound = false
   metadata {
     name      = "${var.name}-pvc"
     namespace = var.namespace

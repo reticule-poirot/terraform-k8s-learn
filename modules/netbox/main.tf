@@ -61,6 +61,9 @@ resource "kubernetes_secret_v1" "netbox_secret" {
 
 resource "kubernetes_persistent_volume_claim_v1" "netbox_pvc" {
   for_each = toset(local.netbox_volumes)
+  # Default StorageClass is WaitForFirstConsumer — bind happens when the pod
+  # schedules, so don't block apply on Bound.
+  wait_until_bound = false
   metadata {
     name      = "${var.name}-${each.value}-pvc"
     namespace = var.namespace

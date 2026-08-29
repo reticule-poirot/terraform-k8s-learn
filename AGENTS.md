@@ -159,17 +159,27 @@ Every workload carries the recommended labels:
 
 - Storage is dynamically provisioned by whatever the **default `StorageClass`**
   is (Docker Desktop: `standard`, `rancher.io/local-path`). No hand-rolled PVs.
+  That class binds `WaitForFirstConsumer`, so the standalone PVCs set
+  `wait_until_bound = false` — otherwise `apply` deadlocks (PVC won't bind until
+  its pod schedules; the pod isn't created until the PVC resource "completes").
+- On first `apply` the `netbox` pod restarts a few times (~2–4): the startup
+  probe is impatient during v4 migrations, and `netbox-worker` crashes with
+  `relation "core_job" does not exist` until the main container finishes
+  migrating. It converges on its own — the deployment goes 2/2 in ~3 min.
 - The `netbox` Deployment has a **10-minute** create timeout (first-run
   migrations + search reindex on v4).
-- Applying the full stack from an empty state is slow and order-sensitive; if an
-  apply fails partway, re-run `plan` before the next `apply` to see real drift.
-- **Nothing here has been apply-tested since the modernization.** `terraform
-  test` is plan-only. The `securityContext` is deliberately conservative
-  (`seccompProfile: RuntimeDefault`, `allowPrivilegeEscalation: false`, and
-  `drop: ["ALL"]` on the images known to run non-root — not postgres/gitea).
-  `runAsNonRoot`, `readOnlyRootFilesystem` and `fsGroup` are **not** set — add
-  them per image once you can apply-test. Resource requests/limits are guesses.
-- `enable_gitea = true` / `enable_prometheus = true` add more untested surface.
+- If an `apply` is interrupted, PVCs it created may be left **not tracked in
+  state** ("... already exists" on the next apply). `kubectl delete pvc` the
+  orphans (they're `Pending`/empty) and re-apply.
+- **Apply-tested once** (core stack: netbox v4.6.9 + PG18 + redis 8.8, on Docker
+  Desktop, 2026-08-30): comes up healthy, `plan` clean afterwards. The
+  `securityContext` is deliberately conservative (`seccompProfile:
+  RuntimeDefault`, `allowPrivilegeEscalation: false`, `drop: ["ALL"]` on
+  redis/netbox/prometheus — not postgres/gitea). `runAsNonRoot`,
+  `readOnlyRootFilesystem`, `fsGroup` are **not** set. Resource requests/limits
+  are rough guesses.
+- `enable_gitea = true` / `enable_prometheus = true` are still plan-only,
+  never applied.
 
 ## Adding a component module
 

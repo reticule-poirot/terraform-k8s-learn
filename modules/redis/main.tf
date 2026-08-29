@@ -19,6 +19,9 @@ resource "kubernetes_secret_v1" "redis_secret" {
 }
 
 resource "kubernetes_persistent_volume_claim_v1" "redis_pvc" {
+  # The default StorageClass binds WaitForFirstConsumer, so the PVC only binds
+  # once the Deployment pod is scheduled. Don't block apply waiting for Bound.
+  wait_until_bound = false
   metadata {
     name      = "${var.name}-pvc"
     namespace = var.namespace
