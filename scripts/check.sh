@@ -33,6 +33,9 @@ fi
 step "terraform validate"
 terraform validate -compact-warnings || fail=1
 
+step "terraform test"
+terraform test || fail=1
+
 step "tflint"
 docker run --rm -v "$repo:/data" -w /data "$TFLINT_IMAGE" \
   --recursive --config=/data/.tflint.hcl || fail=1

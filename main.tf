@@ -19,9 +19,9 @@ module "gitea_postgresql" {
   count         = var.enable_gitea ? 1 : 0
   name          = "postgresql-gitea"
   psql_version  = local.images.postgres
-  psql_user     = var.enable_gitea ? module.netbox_gitea.gitea_db_user : ""
+  psql_user     = var.enable_gitea ? module.netbox_gitea[0].gitea_db_user : ""
   psql_password = var.gitea_db_password
-  psql_db       = var.enable_gitea ? module.netbox_gitea.gitea_db : ""
+  psql_db       = var.enable_gitea ? module.netbox_gitea[0].gitea_db : ""
 }
 
 module "netbox_redis" {
@@ -55,7 +55,7 @@ module "netbox_gitea" {
   count             = var.enable_gitea ? 1 : 0
   gitea_version     = local.images.gitea
   gitea_db_password = var.gitea_db_password
-  gitea_db_service  = var.enable_gitea ? module.gitea_postgresql.service.service : ""
+  gitea_db_service  = var.enable_gitea ? module.gitea_postgresql[0].service.service : ""
 }
 
 module "netbox_prometheus" {

@@ -28,6 +28,7 @@ reproducible results.
 | `.terraform-docs.yml` | config for generating the `README.md` doc blocks |
 | `.tflint.hcl` | tflint config (recommended preset + a few extras) |
 | `scripts/check.sh` | runs every quality gate via Docker |
+| `tests/*.tftest.hcl` | `terraform test` plan-level assertions (one file per module + root) |
 | `modules/postgresql/` | single-instance Postgres `StatefulSet` + hostPath `PersistentVolume` |
 | `modules/redis/` | Redis `Deployment` — instantiated twice (queue broker + cache) |
 | `modules/netbox/` | NetBox server + rq-worker `Deployment`, housekeeping `CronJob`, `Service`, optional TLS `Ingress` |
@@ -80,18 +81,19 @@ Local backend only — state lives in `terraform.tfstate` (gitignored). There is
 
 `scripts/check.sh` needs only `terraform` and `docker` on PATH — the linters run
 as pinned Docker images (`tflint`, `trivy`, `terraform-docs`), nothing is
-installed. It runs fmt-check, `terraform validate`, `tflint --recursive` against
-`.tflint.hcl`, `trivy config`, and a `terraform-docs --output-check`.
+installed. It runs fmt-check, `terraform validate`, `terraform test`,
+`tflint --recursive` against `.tflint.hcl`, `trivy config`, and a
+`terraform-docs --output-check`.
 
 ## Definition of done
 
 Before treating a change as complete:
 
-1. `scripts/check.sh` — passes (fmt, validate, tflint, trivy, terraform-docs
-   freshness). Use `--fix` first to auto-format and regenerate docs.
+1. `scripts/check.sh` — passes (fmt, validate, `terraform test`, tflint, trivy,
+   terraform-docs freshness). Use `--fix` first to auto-format and regenerate
+   docs.
 2. `terraform plan` — reviewed; the diff contains **only** what you intended
    (watch for resource replacements and unexpected `-/+`)
-3. Tests pass (`tests/*.tftest.hcl`, once present)
 
 Report failures honestly — if `plan` shows a replacement you didn't expect, or a
 step was skipped, say so.
@@ -161,6 +163,8 @@ Every workload carries the recommended labels:
   migrations).
 - Applying the full stack from an empty state is slow and order-sensitive; if an
   apply fails partway, re-run `plan` before the next `apply` to see real drift.
+- `enable_gitea = true` / `enable_prometheus = true` are covered by
+  `terraform test` (plan only) but have not been apply-tested on a cluster.
 
 ## Adding a component module
 
@@ -193,7 +197,10 @@ This repo is mid-refactor. Target state, not yet fully realized:
 4. ~~**Quality gates** — fmt / validate / tflint / trivy / terraform-docs.~~
    **Done** — `scripts/check.sh` + `.tflint.hcl`, all linters as pinned Docker
    images. No pre-commit, no CI service (by choice).
-5. **Tests** — `tests/*.tftest.hcl` plan-level assertions per module.
+5. ~~**Tests** — `tests/*.tftest.hcl` plan-level assertions per module.~~
+   **Done** — one file per module + `tests/root.tftest.hcl` (feature-flag
+   plumbing), 12 `run` blocks, all `command = plan`. Run via `scripts/check.sh`
+   or `terraform test`.
 6. **Version bumps** — one component per PR, verified with `plan`/`apply`:
    busybox, Redis 8, PostgreSQL 18, Prometheus 3, Gitea, NetBox 4 (last).
 7. **K8s hardening** — per-stack namespaces, resource requests/limits,
