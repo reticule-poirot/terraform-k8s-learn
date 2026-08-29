@@ -17,7 +17,8 @@ reproducible results.
 
 | Path | Purpose |
 |------|---------|
-| `infra.tf` | `terraform` settings + `kubernetes` provider configuration |
+| `versions.tf` | `required_version` + `required_providers` (root and every module) |
+| `providers.tf` | `kubernetes` provider configuration (root only) |
 | `main.tf` | root module — wires the component modules together |
 | `variables.tf` | root input variables (cluster connection + app secrets) |
 | `outputs.tf` | root outputs |
@@ -181,8 +182,8 @@ This repo is mid-refactor. Target state, not yet fully realized:
    `_v1` types.~~ **Done** (provider 3.2.1). State was empty at the time of the
    rename, so no `moved {}` blocks were needed; add them if you rename a resource
    that already exists in `terraform.tfstate`.
-2. **File split** — break `infra.tf` into `versions.tf` / `providers.tf`; add
-   `versions.tf` to every module.
+2. ~~**File split** — break `infra.tf` into `versions.tf` / `providers.tf`; add
+   `versions.tf` to every module.~~ **Done.**
 3. **Centralized image versions** — one `locals` map / `images.auto.tfvars`
    instead of scattered literals and `latest` defaults.
 4. **Quality gates** — `.pre-commit-config.yaml`, `.tflint.hcl`, GitHub Actions
