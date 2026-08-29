@@ -6,7 +6,7 @@ locals {
   images = {
     postgres   = "18-alpine"  # postgres:<tag>                — PGDATA pinned in the module (see postgresql/main.tf)
     redis      = "8.8-alpine" # redis:<tag>                  — 8.x wire-compatible; AOF/RDB forward-compatible
-    netbox     = "v3.7.2"     # netboxcommunity/netbox:<tag>  — 4.x = Django 5 / GraphQL rewrite
+    netbox     = "v4.6.9"     # netboxcommunity/netbox:<tag>  — v4 serves via granian (see netbox/main.tf probe)
     gitea      = "1.27.2"     # gitea/gitea:<tag>            — GITEA__* env override interface is stable
     prometheus = "v3.14.0"    # prom/prometheus:<tag>         — no CLI flags/PromQL rules in use
     busybox    = "1.38.0"     # busybox:<tag>                 — netbox init container

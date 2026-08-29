@@ -159,8 +159,8 @@ Every workload carries the recommended labels:
 
 - The `postgresql` module uses a **hostPath** `PersistentVolume` — single-node
   only. Data survives pod restarts, not node changes.
-- The `netbox` Deployment has a **7-minute** create timeout (first-run database
-  migrations).
+- The `netbox` Deployment has a **10-minute** create timeout (first-run
+  migrations + search reindex on v4).
 - Applying the full stack from an empty state is slow and order-sensitive; if an
   apply fails partway, re-run `plan` before the next `apply` to see real drift.
 - `enable_gitea = true` / `enable_prometheus = true` are covered by
@@ -201,7 +201,10 @@ This repo is mid-refactor. Target state, not yet fully realized:
    **Done** — one file per module + `tests/root.tftest.hcl` (feature-flag
    plumbing), 12 `run` blocks, all `command = plan`. Run via `scripts/check.sh`
    or `terraform test`.
-6. **Version bumps** — one component per PR, verified with `plan`/`apply`:
-   busybox, Redis 8, PostgreSQL 18, Prometheus 3, Gitea, NetBox 4 (last).
+6. ~~**Version bumps** — one component per commit.~~ **Done (plan-verified,
+   not apply-verified):** busybox 1.38.0, Redis 8.8, PostgreSQL 18 (PGDATA
+   pinned), Prometheus v3.14.0 (template trimmed), Gitea 1.27.2, NetBox v4.6.9
+   (startup probe switched from `unitd` to `granian`). Apply-test the stack
+   before trusting these.
 7. **K8s hardening** — per-stack namespaces, resource requests/limits,
    `securityContext`, StatefulSet `volume_claim_template`, drop the hostPath PV.

@@ -152,7 +152,8 @@ resource "kubernetes_deployment_v1" "netbox" {
           }
           startup_probe {
             exec {
-              command = ["/bin/sh", "-c", "ps aux | grep [u]nitd"]
+              # netbox-docker v4 serves via granian (v3 used nginx-unit / unitd).
+              command = ["/bin/sh", "-c", "ps aux | grep [g]ranian"]
             }
             period_seconds    = 10
             failure_threshold = 30
@@ -244,7 +245,7 @@ resource "kubernetes_deployment_v1" "netbox" {
     kubernetes_service_v1.netbox_service
   ]
   timeouts {
-    create = "7m"
+    create = "10m"
     update = "2m"
   }
 }
