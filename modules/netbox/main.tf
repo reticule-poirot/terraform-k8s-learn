@@ -189,10 +189,11 @@ resource "kubernetes_deployment_v1" "netbox" {
           resources {
             requests = {
               cpu    = "250m"
-              memory = "512Mi"
+              memory = "768Mi"
             }
             limits = {
-              memory = "1Gi"
+              # idle RSS is ~800Mi (measured on v4.6.9); headroom for requests/jobs.
+              memory = "1536Mi"
             }
           }
           startup_probe {
