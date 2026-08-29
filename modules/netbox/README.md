@@ -58,6 +58,7 @@ No modules.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_fqdn"></a> [fqdn](#output\_fqdn) | Netbox external FQDN (ingress host) |
 | <a name="output_name"></a> [name](#output\_name) | Netbox pod name |
 | <a name="output_netbox_db"></a> [netbox\_db](#output\_netbox\_db) | Netbox database name |
 | <a name="output_netbox_db_user"></a> [netbox\_db\_user](#output\_netbox\_db\_user) | Netbox db user |

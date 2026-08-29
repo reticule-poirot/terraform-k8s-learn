@@ -48,5 +48,10 @@ No resources.
 
 ## Outputs
 
-No outputs.
+| Name | Description |
+|------|-------------|
+| <a name="output_gitea_enabled"></a> [gitea\_enabled](#output\_gitea\_enabled) | Whether the Gitea stack is deployed |
+| <a name="output_netbox_service"></a> [netbox\_service](#output\_netbox\_service) | In-cluster NetBox service name and port |
+| <a name="output_netbox_url"></a> [netbox\_url](#output\_netbox\_url) | URL the NetBox ingress serves |
+| <a name="output_prometheus_enabled"></a> [prometheus\_enabled](#output\_prometheus\_enabled) | Whether the Prometheus stack is deployed |
 <!-- END_TF_DOCS -->

@@ -3,6 +3,11 @@ output "name" {
   value       = var.name
 }
 
+output "fqdn" {
+  description = "Netbox external FQDN (ingress host)"
+  value       = var.fqdn
+}
+
 output "service" {
   description = "Netbox service name and port"
   value = {

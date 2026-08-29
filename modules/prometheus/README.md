@@ -38,5 +38,7 @@ No modules.
 
 ## Outputs
 
-No outputs.
+| Name | Description |
+|------|-------------|
+| <a name="output_service"></a> [service](#output\_service) | Prometheus service name and port |
 <!-- END_TF_DOCS -->

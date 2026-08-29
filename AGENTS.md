@@ -26,6 +26,8 @@ reproducible results.
 | `prometheus.yml.tftpl` | scrape-config template rendered by the prometheus module |
 | `terraform.tfvars` | **local, gitignored** — real secrets and cluster credentials |
 | `.terraform-docs.yml` | config for generating the `README.md` doc blocks |
+| `.tflint.hcl` | tflint config (recommended preset + a few extras) |
+| `scripts/check.sh` | runs every quality gate via Docker |
 | `modules/postgresql/` | single-instance Postgres `StatefulSet` + hostPath `PersistentVolume` |
 | `modules/redis/` | Redis `Deployment` — instantiated twice (queue broker + cache) |
 | `modules/netbox/` | NetBox server + rq-worker `Deployment`, housekeeping `CronJob`, `Service`, optional TLS `Ingress` |
@@ -68,25 +70,28 @@ Local backend only — state lives in `terraform.tfstate` (gitignored). There is
 
 | Task | Command |
 |------|---------|
+| **Run every quality gate** | `scripts/check.sh` (add `--fix` to auto-format and regenerate docs) |
 | Format | `terraform fmt -recursive` |
 | Validate (no cluster needed) | `terraform validate` |
 | Plan | `terraform plan` |
 | Apply | `terraform apply` |
-| Regenerate docs | `docker run --rm -v "$(pwd):/terraform-docs" -u $(id -u) quay.io/terraform-docs/terraform-docs:latest -c /terraform-docs/.terraform-docs.yml /terraform-docs` |
-| Lint | `tflint --recursive` |
-| Security scan | `trivy config .` |
+| Regenerate docs | `scripts/check.sh --fix`, or the `terraform-docs` Docker run it wraps |
+| Lint | `scripts/check.sh` (wraps `tflint` + `trivy` Docker images) |
+
+`scripts/check.sh` needs only `terraform` and `docker` on PATH — the linters run
+as pinned Docker images (`tflint`, `trivy`, `terraform-docs`), nothing is
+installed. It runs fmt-check, `terraform validate`, `tflint --recursive` against
+`.tflint.hcl`, `trivy config`, and a `terraform-docs --output-check`.
 
 ## Definition of done
 
 Before treating a change as complete:
 
-1. `terraform fmt -recursive` — clean
-2. `terraform validate` — passes
-3. `terraform plan` — reviewed; the diff contains **only** what you intended
+1. `scripts/check.sh` — passes (fmt, validate, tflint, trivy, terraform-docs
+   freshness). Use `--fix` first to auto-format and regenerate docs.
+2. `terraform plan` — reviewed; the diff contains **only** what you intended
    (watch for resource replacements and unexpected `-/+`)
-4. `terraform-docs` regenerated if any module's inputs, outputs, or resources
-   changed
-5. Tests pass (`tests/*.tftest.hcl`, once present)
+3. Tests pass (`tests/*.tftest.hcl`, once present)
 
 Report failures honestly — if `plan` shows a replacement you didn't expect, or a
 step was skipped, say so.
@@ -163,18 +168,15 @@ Every workload carries the recommended labels:
    `versions.tf`, `README.md`.
 2. Add a `module` block in `main.tf`; gate it behind an `enable_<name>` bool if
    it is optional.
-3. Run `terraform-docs`, `terraform validate`, and add
-   `tests/<name>.tftest.hcl` with `command = plan` assertions.
+3. Run `scripts/check.sh --fix`, then add `tests/<name>.tftest.hcl` with
+   `command = plan` assertions.
 
 ## Toolchain
 
-Only `terraform` and `kubectl` are required. `terraform-docs` runs via Docker
-(no local install — see [Core workflow](#core-workflow)). Install the other
-optional tools with:
-
-```sh
-brew install tflint trivy pre-commit
-```
+Only `terraform`, `kubectl`, and `docker` are required. The linters
+(`tflint`, `trivy`, `terraform-docs`) are never installed — `scripts/check.sh`
+runs them as pinned Docker images. Bump an image tag in that script to update a
+linter.
 
 ## Modernization roadmap (in progress)
 
@@ -188,8 +190,9 @@ This repo is mid-refactor. Target state, not yet fully realized:
    `versions.tf` to every module.~~ **Done.**
 3. ~~**Centralized image versions** — one `locals` map instead of scattered
    literals and `latest` defaults.~~ **Done** (`images.tf`, `local.images`).
-4. **Quality gates** — `.pre-commit-config.yaml`, `.tflint.hcl`, GitHub Actions
-   CI running fmt / validate / tflint / trivy / terraform-docs.
+4. ~~**Quality gates** — fmt / validate / tflint / trivy / terraform-docs.~~
+   **Done** — `scripts/check.sh` + `.tflint.hcl`, all linters as pinned Docker
+   images. No pre-commit, no CI service (by choice).
 5. **Tests** — `tests/*.tftest.hcl` plan-level assertions per module.
 6. **Version bumps** — one component per PR, verified with `plan`/`apply`:
    busybox, Redis 8, PostgreSQL 18, Prometheus 3, Gitea, NetBox 4 (last).
