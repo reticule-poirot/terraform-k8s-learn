@@ -37,7 +37,7 @@ No modules.
 | <a name="input_psql_password"></a> [psql\_password](#input\_psql\_password) | Postgresql user password | `string` | n/a | yes |
 | <a name="input_psql_port"></a> [psql\_port](#input\_psql\_port) | Postgresql port | `number` | `5432` | no |
 | <a name="input_psql_user"></a> [psql\_user](#input\_psql\_user) | Postgresql database user | `string` | n/a | yes |
-| <a name="input_psql_version"></a> [psql\_version](#input\_psql\_version) | Postgresql version | `string` | n/a | yes |
+| <a name="input_psql_version"></a> [psql\_version](#input\_psql\_version) | postgres image tag | `string` | n/a | yes |
 
 ## Outputs
 

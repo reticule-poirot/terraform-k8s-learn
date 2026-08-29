@@ -1,6 +1,6 @@
 variable "redis_version" {
   type        = string
-  description = "Redis version"
+  description = "redis image tag"
 }
 
 variable "redis_port" {

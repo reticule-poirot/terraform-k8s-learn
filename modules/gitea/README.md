@@ -37,7 +37,7 @@ No modules.
 | <a name="input_gitea_db_service"></a> [gitea\_db\_service](#input\_gitea\_db\_service) | Gitea database service | `string` | n/a | yes |
 | <a name="input_gitea_db_type"></a> [gitea\_db\_type](#input\_gitea\_db\_type) | Gitea db type | `string` | `"postgres"` | no |
 | <a name="input_gitea_db_user"></a> [gitea\_db\_user](#input\_gitea\_db\_user) | Gitea db user | `string` | `"gitea"` | no |
-| <a name="input_gitea_version"></a> [gitea\_version](#input\_gitea\_version) | Gitea version | `string` | `"latest-rootless"` | no |
+| <a name="input_gitea_version"></a> [gitea\_version](#input\_gitea\_version) | gitea/gitea image tag | `string` | n/a | yes |
 | <a name="input_name"></a> [name](#input\_name) | Gitea pod name | `string` | `"gitea"` | no |
 
 ## Outputs

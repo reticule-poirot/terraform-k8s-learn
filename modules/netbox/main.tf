@@ -140,7 +140,7 @@ resource "kubernetes_deployment_v1" "netbox" {
         init_container {
           name              = "${var.name}-init"
           image_pull_policy = "IfNotPresent"
-          image             = "busybox:1.36.1"
+          image             = "busybox:${var.busybox_version}"
           command           = ["/bin/sh", "-c", "sleep 10"]
         }
         container {

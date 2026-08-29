@@ -34,7 +34,7 @@ No modules.
 | <a name="input_redis_data_size"></a> [redis\_data\_size](#input\_redis\_data\_size) | Redis data volume size | `string` | `"1Gi"` | no |
 | <a name="input_redis_password"></a> [redis\_password](#input\_redis\_password) | Redis db password | `string` | n/a | yes |
 | <a name="input_redis_port"></a> [redis\_port](#input\_redis\_port) | Redis port | `number` | `6379` | no |
-| <a name="input_redis_version"></a> [redis\_version](#input\_redis\_version) | Redis version | `string` | n/a | yes |
+| <a name="input_redis_version"></a> [redis\_version](#input\_redis\_version) | redis image tag | `string` | n/a | yes |
 
 ## Outputs
 

@@ -26,8 +26,12 @@ variable "tls_key" {
 
 variable "netbox_version" {
   type        = string
-  description = "Netbox version"
-  default     = "latest"
+  description = "netboxcommunity/netbox image tag"
+}
+
+variable "busybox_version" {
+  type        = string
+  description = "busybox image tag for the init container"
 }
 
 variable "netbox_db_user" {

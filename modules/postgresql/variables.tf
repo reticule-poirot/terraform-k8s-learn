@@ -5,7 +5,7 @@ variable "name" {
 
 variable "psql_version" {
   type        = string
-  description = "Postgresql version"
+  description = "postgres image tag"
 }
 
 variable "psql_user" {

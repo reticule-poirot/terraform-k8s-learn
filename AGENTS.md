@@ -19,6 +19,7 @@ reproducible results.
 |------|---------|
 | `versions.tf` | `required_version` + `required_providers` (root and every module) |
 | `providers.tf` | `kubernetes` provider configuration (root only) |
+| `images.tf` | `local.images` — the single source of truth for container image tags |
 | `main.tf` | root module — wires the component modules together |
 | `variables.tf` | root input variables (cluster connection + app secrets) |
 | `outputs.tf` | root outputs |
@@ -130,9 +131,10 @@ Every workload carries the recommended labels:
 
 ### Container images & versions
 
-- **Pin every image** — no `latest`, no floating major tags. Image versions are
-  centralized (see roadmap item 3); until then they live in `main.tf` and module
-  variable defaults.
+- **Pin every image** — no `latest`, no floating major tags. Every image tag
+  lives in the `local.images` map in `images.tf`; module version variables have
+  **no default** (the root must pass an explicit tag). Bump a version there, not
+  in a module.
 - **Crossing a major version** (e.g. `postgres:15` → `18`, `netbox:v3` → `v4`):
   read the upstream release notes / upgrade guide first, and record in the PR
   which breaking changes you checked. Known landmines:
@@ -184,8 +186,8 @@ This repo is mid-refactor. Target state, not yet fully realized:
    that already exists in `terraform.tfstate`.
 2. ~~**File split** — break `infra.tf` into `versions.tf` / `providers.tf`; add
    `versions.tf` to every module.~~ **Done.**
-3. **Centralized image versions** — one `locals` map / `images.auto.tfvars`
-   instead of scattered literals and `latest` defaults.
+3. ~~**Centralized image versions** — one `locals` map instead of scattered
+   literals and `latest` defaults.~~ **Done** (`images.tf`, `local.images`).
 4. **Quality gates** — `.pre-commit-config.yaml`, `.tflint.hcl`, GitHub Actions
    CI running fmt / validate / tflint / trivy / terraform-docs.
 5. **Tests** — `tests/*.tftest.hcl` plan-level assertions per module.

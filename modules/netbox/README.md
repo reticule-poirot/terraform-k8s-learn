@@ -33,6 +33,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_busybox_version"></a> [busybox\_version](#input\_busybox\_version) | busybox image tag for the init container | `string` | n/a | yes |
 | <a name="input_fqdn"></a> [fqdn](#input\_fqdn) | Netbox fqdn | `string` | `"netbox.example.local"` | no |
 | <a name="input_metrics_enable"></a> [metrics\_enable](#input\_metrics\_enable) | Prometheus metrics enable | `bool` | `false` | no |
 | <a name="input_name"></a> [name](#input\_name) | Netbox pod name | `string` | `"netbox"` | no |
@@ -42,7 +43,7 @@ No modules.
 | <a name="input_netbox_db_port"></a> [netbox\_db\_port](#input\_netbox\_db\_port) | Netbox db port | `number` | `5432` | no |
 | <a name="input_netbox_db_service"></a> [netbox\_db\_service](#input\_netbox\_db\_service) | Netbox database service | `string` | n/a | yes |
 | <a name="input_netbox_db_user"></a> [netbox\_db\_user](#input\_netbox\_db\_user) | Netbox db user | `string` | `"netbox"` | no |
-| <a name="input_netbox_version"></a> [netbox\_version](#input\_netbox\_version) | Netbox version | `string` | `"latest"` | no |
+| <a name="input_netbox_version"></a> [netbox\_version](#input\_netbox\_version) | netboxcommunity/netbox image tag | `string` | n/a | yes |
 | <a name="input_redis_cache_password"></a> [redis\_cache\_password](#input\_redis\_cache\_password) | Redis cache password | `string` | n/a | yes |
 | <a name="input_redis_cache_service"></a> [redis\_cache\_service](#input\_redis\_cache\_service) | Redis cache service | `string` | n/a | yes |
 | <a name="input_redis_password"></a> [redis\_password](#input\_redis\_password) | Redis password | `string` | n/a | yes |

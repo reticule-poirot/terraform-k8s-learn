@@ -6,8 +6,7 @@ variable "name" {
 
 variable "prometheus_version" {
   type        = string
-  description = "Prometheus version"
-  default     = "latest"
+  description = "prom/prometheus image tag"
 }
 
 variable "fqdn" {

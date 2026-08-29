@@ -6,8 +6,7 @@ variable "name" {
 
 variable "gitea_version" {
   type        = string
-  description = "Gitea version"
-  default     = "latest-rootless"
+  description = "gitea/gitea image tag"
 }
 
 variable "gitea_data_size" {
