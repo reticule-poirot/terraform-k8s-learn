@@ -73,3 +73,15 @@ variable "enable_prometheus" {
   description = "Deploy prometheus related resources"
   default     = false
 }
+
+variable "netbox_fqdn" {
+  type        = string
+  description = "Netbox external FQDN (ingress host)"
+  default     = "netbox.example.local"
+}
+
+variable "enable_ingress" {
+  type        = bool
+  description = "Create the TLS Ingress for Netbox"
+  default     = true
+}

@@ -53,7 +53,8 @@ module "netbox_netbox" {
   namespace            = local.namespace
   netbox_version       = local.images.netbox
   busybox_version      = local.images.busybox
-  fqdn                 = "netbox.example.local"
+  fqdn                 = var.netbox_fqdn
+  use_ingress          = var.enable_ingress
   netbox_db_password   = var.netbox_password
   netbox_db_service    = module.netbox_postgresql.service.service
   redis_password       = var.redis_password

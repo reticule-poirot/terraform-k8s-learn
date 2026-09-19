@@ -58,6 +58,10 @@ every value below:
 - **App secrets** — `netbox_password`, `redis_password`, `redis_cache_password`,
   `secret_key` (**must be ≥ 50 characters**), `netbox_tls_cert`, `netbox_tls_key`,
   and `gitea_db_password` if `enable_gitea = true`.
+- **Netbox ingress** — `netbox_fqdn` (default `netbox.example.local`) and
+  `enable_ingress` (default `true`) control the optional TLS `Ingress` in
+  `modules/netbox`; the Ingress is only created when `enable_ingress = true`
+  **and** both `netbox_tls_cert`/`netbox_tls_key` are set.
 
 `terraform.tfvars` is gitignored (`*.tfvars`). **Never commit it** and never paste
 its contents into a PR, an issue, or an external service.
